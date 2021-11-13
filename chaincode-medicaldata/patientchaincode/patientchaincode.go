@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -12,20 +13,8 @@ type PatientSmartContract struct {
 	contractapi.Contract
 }
 
-const INDEX_NAME = "patientData~patientID"
+const INDEX_NAME = "patientData"
 const KEY_NAME = "patientData"
-
-//TODO Add composite IDs for patients
-
-type PatientEntry struct {
-	ID                      string   `json:"ID"` //Must be string
-	OrgReadAllowed          []string `json:"OrgReadAllowed,omitempty" metadata:"OrgReadAllowed,optional"`
-	UsersReadAllowed        []string `json:"UsersReadAllowed,omitempty" metadata:"UsersReadAllowed,optional"`
-	OrgComputationAllowed   []string `json:"OrgComputationAllowed,omitempty" metadata:"OrgComputationAllowed,optional"`
-	UsersComputationAllowed []string `json:"UsersComputationAllowed,omitempty" metadata:"UsersComputationAllowed,optional"`
-	OrgWriteAllowed         []string `json:"OrgWriteAllowed,omitempty" metadata:"OrgWriteAllowed,optional"`
-	UsersWriteAllowed       []string `json:"UsersWriteAllowed,omitempty" metadata:"UsersWriteAllowed,optional"`
-}
 
 // Example data to fill ledger for testing purposes. Should be removed in production.
 func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -34,7 +23,7 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 	id3, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
 	id4, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient4,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
 
-	entries := []PatientEntry{
+	entries := []medicaldatastructs.PatientEntry{
 		{
 			ID:                      id1,
 			OrgReadAllowed:          []string{"org2.example.com"},
@@ -91,8 +80,8 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 // AddEntry issues a new entry to the world state with given details. Assuming that patient is adding himself to the system
 func (s *PatientSmartContract) AddPatientEntry(ctx contractapi.TransactionContextInterface, orgReadAllowed []string, usersReadAllowed []string, orgComputationAllowed []string, usersComputationAllowed []string, orgWriteAllowed []string, usersWriteAllowed []string) error {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", x509.Subject.ToRDNSequence().String()})
-	patientEntry := PatientEntry{
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, x509.Subject.ToRDNSequence().String()})
+	patientEntry := medicaldatastructs.PatientEntry{
 		ID:                      id,
 		OrgReadAllowed:          orgReadAllowed,
 		UsersReadAllowed:        usersReadAllowed,
@@ -119,9 +108,9 @@ func stringInSlice(a string, list []string) bool {
 }
 
 // ReadPatientEntry returns the patient entry stored in the world state with given id.
-func (s *PatientSmartContract) ReadPatientEntry(ctx contractapi.TransactionContextInterface, patientName string) (*PatientEntry, error) {
+func (s *PatientSmartContract) ReadPatientEntry(ctx contractapi.TransactionContextInterface, patientName string) (*medicaldatastructs.PatientEntry, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", patientName})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientName})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return nil, fmt.Errorf("PatientSmartContract:ReadPatientEntry: failed to read from world state: %v", err)
@@ -130,7 +119,7 @@ func (s *PatientSmartContract) ReadPatientEntry(ctx contractapi.TransactionConte
 		return nil, fmt.Errorf("PatientSmartContract:ReadPatientEntry: the patient entry %s does not exist", id)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return nil, err
@@ -165,14 +154,14 @@ func (s *PatientSmartContract) UpdatePatientEntry(ctx contractapi.TransactionCon
 		return fmt.Errorf("PatientSmartContract:UpdatePatientEntry: the patient entry %s does not exist", id)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return err
 	}
 
 	// overwriting original patientEntry with new
-	patientEntry = PatientEntry{
+	patientEntry = medicaldatastructs.PatientEntry{
 		ID:                      id,
 		OrgReadAllowed:          orgReadAllowed,
 		UsersReadAllowed:        usersReadAllowed,
@@ -209,7 +198,7 @@ func (s *PatientSmartContract) DeletePatientEntry(ctx contractapi.TransactionCon
 		return fmt.Errorf("PatientSmartContract:DeletePatientEntry: the patient entry %s does not exist", id)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return err
@@ -220,7 +209,7 @@ func (s *PatientSmartContract) DeletePatientEntry(ctx contractapi.TransactionCon
 
 // EntryExists returns true when patientEntry with given ID exists in world state
 func (s *PatientSmartContract) EntryExists(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", patientID})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return false, fmt.Errorf("PatientSmartContract:EntryExists: failed to read from world state: %v", err)
@@ -237,7 +226,7 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 	if patientID == x509.Subject.ToRDNSequence().String() {
 		return true, nil
 	}
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", patientID})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return false, fmt.Errorf("PatientSmartContract:CanRead: failed to read from world state: %v", err)
@@ -246,7 +235,7 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 		return false, fmt.Errorf("PatientSmartContract:CanRead: the patient entry %s does not exist", patientID)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return false, err
@@ -261,7 +250,7 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 
 // CanRead returns whether user or org has permission to read values
 func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", patientID})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return false, fmt.Errorf("PatientSmartContract:CanWrite: failed to read from world state: %v", err)
@@ -270,7 +259,7 @@ func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterf
 		return false, fmt.Errorf("PatientSmartContract:CanWrite: the patient entry %s does not exist", patientID)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return false, err
@@ -286,7 +275,7 @@ func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterf
 
 // CanCompute returns whether user or org has permission to read values
 func (s *PatientSmartContract) CanCompute(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{"patientData", patientID})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return false, fmt.Errorf("PatientSmartContract:CanCompute: failed to read from world state: %v", err)
@@ -295,7 +284,7 @@ func (s *PatientSmartContract) CanCompute(ctx contractapi.TransactionContextInte
 		return false, fmt.Errorf("PatientSmartContract:CanCompute: the patient entry %s does not exist", patientID)
 	}
 
-	var patientEntry PatientEntry
+	var patientEntry medicaldatastructs.PatientEntry
 	err = json.Unmarshal(patientEntryJSON, &patientEntry)
 	if err != nil {
 		return false, err
@@ -310,7 +299,7 @@ func (s *PatientSmartContract) CanCompute(ctx contractapi.TransactionContextInte
 }
 
 // GetAllEntriesAdmin returns all medical entries found in world state. Only admin can execute this
-func (s *PatientSmartContract) GetAllEntriesAdmin(ctx contractapi.TransactionContextInterface) ([]*PatientEntry, error) {
+func (s *PatientSmartContract) GetAllEntriesAdmin(ctx contractapi.TransactionContextInterface) ([]*medicaldatastructs.PatientEntry, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	err := cid.AssertAttributeValue(ctx.GetStub(), "hf.Type", "admin")
 
@@ -324,14 +313,14 @@ func (s *PatientSmartContract) GetAllEntriesAdmin(ctx contractapi.TransactionCon
 	}
 	defer resultsIterator.Close()
 
-	var medicalEntries []*PatientEntry
+	var medicalEntries []*medicaldatastructs.PatientEntry
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
 
-		var patientEntry PatientEntry
+		var patientEntry medicaldatastructs.PatientEntry
 		err = json.Unmarshal(queryResponse.Value, &patientEntry)
 		if err != nil {
 			return nil, err

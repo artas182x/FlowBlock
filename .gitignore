@@ -11,6 +11,7 @@ organizations/ordererOrganizations/*
 organizations/peerOrganizations/*
 system-genesis-block/*
 /bin/*
+/client/wallet/appUser.id
 *~
 *.tar.gz
 log.txt

@@ -1,6 +1,7 @@
 package tokenchaincode
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -152,7 +153,10 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 		return "", fmt.Errorf("ComputationTokenSmartContract:Compute: token is invalid")
 	}
 
-	params := []string{token.Method, id}
+	nonce_byte, _ := ctx.GetStub().GetCreator()
+	nonce := base64.StdEncoding.EncodeToString(nonce_byte)
+
+	params := []string{token.Method, nonce}
 
 	args := strings.Split(token.Arguments, ";")
 	params = append(params, args...)
@@ -232,6 +236,8 @@ func isTokenValid(ctx contractapi.TransactionContextInterface, token Token) (boo
 
 func (s *ComputationTokenSmartContract) CheckTokenValidity(ctx contractapi.TransactionContextInterface, tokenID string, method string, arguments string, chaincodeName string, basicCheck string) (bool, error) {
 
+	fmt.Printf("ComputationTokenSmartContract:CheckTokenValidity: Veryfing %s token value for: %s %s (%s) Basic check: %s\n", tokenID, method, arguments, chaincodeName, basicCheck)
+
 	tokenJSON, err := ctx.GetStub().GetState(tokenID)
 	if err != nil {
 		return false, fmt.Errorf("ComputationTokenSmartContract:checkTokenValidity: failed to read from world state: %v", err)
@@ -252,6 +258,8 @@ func (s *ComputationTokenSmartContract) CheckTokenValidity(ctx contractapi.Trans
 		return false, err
 	}
 
+	fmt.Printf("ComputationTokenSmartContract:CheckTokenValidity: isTokenValid: %t\n", tokenValid)
+
 	if !tokenValid {
 		return false, nil
 	}
@@ -260,9 +268,12 @@ func (s *ComputationTokenSmartContract) CheckTokenValidity(ctx contractapi.Trans
 
 	if !basicCheckBool {
 		if method != token.Method || arguments != token.Arguments || chaincodeName != token.ChaincodeName {
+			fmt.Printf("ComputationTokenSmartContract:CheckTokenValidity: Result: %t\n", false)
 			return false, nil
 		}
 	}
+
+	fmt.Printf("ComputationTokenSmartContract:CheckTokenValidity: Result: %t\n", true)
 
 	return true, nil
 }

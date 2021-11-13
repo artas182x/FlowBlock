@@ -1,14 +1,15 @@
 package medicaldatachaincode
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/patientchaincode"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -16,15 +17,7 @@ type MedicalDataSmartContract struct {
 	contractapi.Contract
 }
 
-type MedicalEntry struct {
-	ID                string    `json:"ID"` //Must be string
-	PatientID         string    `json:"PatientID"`
-	MedicalEntryName  string    `json:"MedicalEntryName"`
-	MedicalEntryValue string    `json:"MedicalEntryValue"`
-	DateAdded         time.Time `json:"DateAdded"`
-}
-
-const INDEX_NAME = "medicalData~patientID~medicalEntryName~id"
+const INDEX_NAME = "medicalData"
 const KEY_NAME = "medicalData"
 
 // Example data to fill ledger for testing purposes. Should be removed in production.
@@ -38,7 +31,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 	id6, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", ctx.GetStub().GetTxID() + "6"})
 	id7, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "HeartRate", ctx.GetStub().GetTxID() + "7"})
 
-	entries := []MedicalEntry{
+	entries := []medicaldatastructs.MedicalEntry{
 		{
 			ID:                id1,
 			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
@@ -106,7 +99,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 }
 
 // AddEntry issues a new entry to the world state with given details.
-func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryValue string, dateAdded time.Time, token string) error {
+func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryValue string, dateAdded time.Time, nonce string) error {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
 
@@ -127,18 +120,18 @@ func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionCo
 	if !canWrite && !canCompute {
 		fmt.Errorf("MedicalDataSmartContract:AddMedicalEntry: user does not have write/compute permissions")
 	} else if !canWrite && canCompute {
-		isTokenValid, err := isTokenValidBasic(ctx, token)
+		isNonceValid, err := isNonceValid(ctx, nonce)
 		if err != nil {
 			return err
 		}
-		if !isTokenValid {
-			fmt.Errorf("MedicalDataSmartContract:AddMedicalEntry: token %s is not valid", token)
+		if !isNonceValid {
+			fmt.Errorf("MedicalDataSmartContract:AddMedicalEntry: nonce %s is not valid", nonce)
 		}
 	}
 
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID, medicalEntryName, ctx.GetStub().GetTxID()})
 
-	medicalEntry := MedicalEntry{
+	medicalEntry := medicaldatastructs.MedicalEntry{
 		ID:                id,
 		PatientID:         patientID,
 		MedicalEntryName:  medicalEntryName,
@@ -154,7 +147,7 @@ func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionCo
 }
 
 // ReadMedicalEntry returns the medical entry stored in the world state with given id.
-func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionContextInterface, id string, token string) (*MedicalEntry, error) {
+func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionContextInterface, id string, nonce string) (*medicaldatastructs.MedicalEntry, error) {
 	medicalEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: failed to read from world state: %v", err)
@@ -163,7 +156,7 @@ func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionC
 		return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: the medical entry %s does not exist", id)
 	}
 
-	var medicalEntry MedicalEntry
+	var medicalEntry medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(medicalEntryJSON, &medicalEntry)
 	if err != nil {
 		return nil, err
@@ -186,12 +179,12 @@ func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionC
 	if !canRead && !canCompute {
 		return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: user does not have read/compute permissions to %s", id)
 	} else if !canRead && canCompute {
-		isTokenValid, err := isTokenValidBasic(ctx, token)
+		isNonceValid, err := isNonceValid(ctx, nonce)
 		if err != nil {
 			return nil, err
 		}
-		if !isTokenValid {
-			return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: token %s is not valid", token)
+		if !isNonceValid {
+			return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: nonce %s is not valid", nonce)
 		}
 	}
 
@@ -216,7 +209,7 @@ func (s *MedicalDataSmartContract) UpdateMedicalEntry(ctx contractapi.Transactio
 		return fmt.Errorf("MedicalDataSmartContract:UpdateMedicalEntry: the medical entry %s does not exist", id)
 	}
 
-	var medicalEntry MedicalEntry
+	var medicalEntry medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(medicalEntryJSON, &medicalEntry)
 	if err != nil {
 		return err
@@ -239,7 +232,7 @@ func (s *MedicalDataSmartContract) UpdateMedicalEntry(ctx contractapi.Transactio
 	}
 
 	// overwriting original medicalEntry with new
-	medicalEntry = MedicalEntry{
+	medicalEntry = medicaldatastructs.MedicalEntry{
 		ID:                id,
 		PatientID:         patientID,
 		MedicalEntryName:  medicalEntryName,
@@ -272,7 +265,7 @@ func (s *MedicalDataSmartContract) DeleteMedicalEntry(ctx contractapi.Transactio
 		return fmt.Errorf("MedicalDataSmartContract:DeleteMedicalEntry: the medical entry %s does not exist", id)
 	}
 
-	var medicalEntry MedicalEntry
+	var medicalEntry medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(medicalEntryJSON, &medicalEntry)
 	if err != nil {
 		return err
@@ -303,7 +296,7 @@ func (s *MedicalDataSmartContract) MedicalEntryExists(ctx contractapi.Transactio
 }
 
 // GetPatientMedicalEntrys returns all medical entries found in world state
-func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, dateStartTimestamp string, dateEndTimestamp string, token string) ([]*MedicalEntry, error) {
+func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, dateStartTimestamp string, dateEndTimestamp string, nonce string) ([]*medicaldatastructs.MedicalEntry, error) {
 
 	compositeKey := []string{KEY_NAME, patientID}
 	if medicalEntryName != "" {
@@ -329,7 +322,7 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 
 	fmt.Printf("MedicalDataSmartContract:GetPatientMedicalEntries: Parsed timestamps. DateStart: %s  DateEnd: %s\n", dateStart.String(), dateEnd.String())
 
-	var medicalEntries []*MedicalEntry
+	var medicalEntries []*medicaldatastructs.MedicalEntry
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
@@ -338,7 +331,7 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 
 		fmt.Printf("MedicalDataSmartContract:GetPatientMedicalEntries: Deserialize JSON: %s\n", queryResponse.Value)
 
-		var medicalEntry MedicalEntry
+		var medicalEntry medicaldatastructs.MedicalEntry
 		err = json.Unmarshal(queryResponse.Value, &medicalEntry)
 		if err != nil {
 			return nil, err
@@ -371,12 +364,12 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 		if !canRead && !canCompute {
 			return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: user does not have enough read/compute permissions")
 		} else if !canRead && canCompute {
-			isTokenValid, err := isTokenValidBasic(ctx, token)
+			isNonceValid, err := isNonceValid(ctx, nonce)
 			if err != nil {
 				return nil, err
 			}
-			if !isTokenValid {
-				return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: token %s is not valid", token)
+			if !isNonceValid {
+				return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: nonce %s is not valid", nonce)
 			}
 		}
 
@@ -401,7 +394,7 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 }
 
 // GetAllEntriesAdmin returns all medical entries found in world state. Only admin can execute this
-func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.TransactionContextInterface) ([]*MedicalEntry, error) {
+func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.TransactionContextInterface) ([]*medicaldatastructs.MedicalEntry, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	err := cid.AssertAttributeValue(ctx.GetStub(), "hf.Type", "admin")
 
@@ -416,14 +409,14 @@ func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.Transactio
 	}
 	defer resultsIterator.Close()
 
-	var medicalEntries []*MedicalEntry
+	var medicalEntries []*medicaldatastructs.MedicalEntry
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
 
-		var medicalEntry MedicalEntry
+		var medicalEntry medicaldatastructs.MedicalEntry
 		err = json.Unmarshal(queryResponse.Value, &medicalEntry)
 		if err != nil {
 			return nil, err
@@ -435,25 +428,15 @@ func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.Transactio
 	return medicalEntries, nil
 }
 
-func isTokenValidBasic(ctx contractapi.TransactionContextInterface, token string) (bool, error) {
+func isNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
 
-	params := []string{token, "ComputationTokenSmartContract:CheckTokenValidity", "", "", "true"}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
-
-	response := ctx.GetStub().InvokeChaincode("computationtoken", queryArgs, "")
-
-	if response.Status != shim.OK {
-		return false, fmt.Errorf("MedicalDataSmartContract:isTokenValid: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
-	}
-
-	var isValid bool
-	err := json.Unmarshal(response.Payload, &isValid)
+	creatorByte, err := ctx.GetStub().GetCreator()
 	if err != nil {
 		return false, err
 	}
 
-	return isValid, nil
+	creator := base64.StdEncoding.EncodeToString(creatorByte)
+
+	fmt.Printf("MedicalDataSmartContract:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
+	return creator == nonceStr, nil
 }

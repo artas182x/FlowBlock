@@ -1,11 +1,13 @@
 package examplealghorytm
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -19,14 +21,6 @@ type Method struct {
 	Args        string `json:"args"`
 	RetType     string `json:"retType"`
 	Description string `json:"description"`
-}
-
-type MedicalEntry struct {
-	ID                string    `json:"ID"` //Must be string
-	PatientID         string    `json:"PatientID"`
-	MedicalEntryName  string    `json:"MedicalEntryName"`
-	MedicalEntryValue string    `json:"MedicalEntryValue"`
-	DateAdded         time.Time `json:"DateAdded"`
 }
 
 type Token struct {
@@ -60,41 +54,29 @@ var METHODS = []Method{
 	},
 }
 
-func isTokenValid(ctx contractapi.TransactionContextInterface, token string, method string, args string) (bool, error) {
-
-	params := []string{token, "ComputationTokenSmartContract:CheckTokenValidity", args, "examplealghorytm", "false"}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
-
-	response := ctx.GetStub().InvokeChaincode("computationtoken", queryArgs, "")
-
-	if response.Status != shim.OK {
-		return false, fmt.Errorf("ExampleAlghorytmSmartContract:AvgBloodPreasure: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
-	}
-
-	var isValid bool
-	err := json.Unmarshal(response.Payload, &isValid)
+func isNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
+	creatorByte, err := ctx.GetStub().GetCreator()
 	if err != nil {
 		return false, err
 	}
 
-	return isValid, nil
+	creator := base64.StdEncoding.EncodeToString(creatorByte)
+
+	fmt.Printf("ExampleAlghorytmSmartContract:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
+	return creator == nonceStr, nil
 }
 
-func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.TransactionContextInterface, token string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
+func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
 
-	argsStr := fmt.Sprintf("%s,%s,%s", patientID, startDateTimestamp, endDateTimestamp)
-	isValid, err := isTokenValid(ctx, token, "AvgBloodPreasure", argsStr)
+	isNonceValid, err := isNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
-	if !isValid {
-		return "", fmt.Errorf("Token %s is not valid", token)
+	if !isNonceValid {
+		return "", fmt.Errorf("ExampleAlghorytmSmartContract:AvgBloodPreasure: Nonce is invalid")
 	}
 
-	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "SystolicBloodPreasure", startDateTimestamp, endDateTimestamp, token}
+	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "SystolicBloodPreasure", startDateTimestamp, endDateTimestamp, nonce}
 	queryArgs := make([][]byte, len(params))
 	for i, arg := range params {
 		queryArgs[i] = []byte(arg)
@@ -108,7 +90,7 @@ func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.Transac
 		return "", fmt.Errorf("ExampleAlghorytmSmartContract:AvgBloodPreasure: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
 	}
 
-	var medicalEntries []MedicalEntry
+	var medicalEntries []medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(response.Payload, &medicalEntries)
 	if err != nil {
 		return "", err
@@ -130,17 +112,17 @@ func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.Transac
 	return fmt.Sprint(ret), nil
 }
 
-func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.TransactionContextInterface, token string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
-	argsStr := fmt.Sprintf("%s,%s,%s", patientID, startDateTimestamp, endDateTimestamp)
-	isValid, err := isTokenValid(ctx, token, "MaxHeartRate", argsStr)
+func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
+
+	isNonceValid, err := isNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
-	if !isValid {
-		return "", fmt.Errorf("Token %s is not valid", token)
+	if !isNonceValid {
+		return "", fmt.Errorf("ExampleAlghorytmSmartContract:MaxHeartRate: Nonce is invalid")
 	}
 
-	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "HeartRate", startDateTimestamp, endDateTimestamp, token}
+	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "HeartRate", startDateTimestamp, endDateTimestamp, nonce}
 	queryArgs := make([][]byte, len(params))
 	for i, arg := range params {
 		queryArgs[i] = []byte(arg)
@@ -154,7 +136,7 @@ func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 		return "", fmt.Errorf("ExampleAlghorytmSmartContract:MaxHeartRate: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
 	}
 
-	var medicalEntries []MedicalEntry
+	var medicalEntries []medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(response.Payload, &medicalEntries)
 	if err != nil {
 		return "", err
@@ -177,13 +159,14 @@ func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 	return fmt.Sprint(max), nil
 }
 
-func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, token string, patientID string) (string, error) {
-	isValid, err := isTokenValid(ctx, token, "LongRunningMethod", patientID)
+func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, token string, patientID string) (string, error) {
+
+	isNonceValid, err := isNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
-	if !isValid {
-		return "", fmt.Errorf("Token %s is not valid", token)
+	if !isNonceValid {
+		return "", fmt.Errorf("ExampleAlghorytmSmartContract:MaxHeartRate: Nonce is invalid")
 	}
 
 	time.Sleep(60 * time.Second)
