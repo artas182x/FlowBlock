@@ -1,7 +1,6 @@
 package medicaldatachaincode
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -426,17 +425,4 @@ func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.Transactio
 	}
 
 	return medicalEntries, nil
-}
-
-func isNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
-
-	creatorByte, err := ctx.GetStub().GetCreator()
-	if err != nil {
-		return false, err
-	}
-
-	creator := base64.StdEncoding.EncodeToString(creatorByte)
-
-	fmt.Printf("MedicalDataSmartContract:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
-	return creator == nonceStr, nil
 }
