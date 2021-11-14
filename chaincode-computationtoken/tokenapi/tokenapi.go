@@ -15,12 +15,18 @@ type Method struct {
 	Description string `json:"description"`
 }
 
+type Ret struct {
+	RetValue string `json:retValue`
+	RetType  string `json:retType`
+}
+
 type Token struct {
 	ID             string    `json:"ID"` //Must be string
 	UserRequested  string    `json:userRequested`
 	ChaincodeName  string    `json:chaincodeName`
 	Method         string    `json:method`
 	Arguments      string    `json:arguments`
+	Ret            Ret       `json:"ret,omitempty" metadata:"ret,optional"`
 	TimeRequested  time.Time `json:timeRequested`
 	ExpirationTime time.Time `json.expirationTime`
 }

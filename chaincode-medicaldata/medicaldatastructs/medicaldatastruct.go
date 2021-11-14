@@ -6,6 +6,7 @@ type MedicalEntry struct {
 	ID                string    `json:"ID"` //Must be string
 	PatientID         string    `json:"PatientID"`
 	MedicalEntryName  string    `json:"MedicalEntryName"`
+	MedicalEntryType  string    `json:"MedicalEntryType"`
 	MedicalEntryValue string    `json:"MedicalEntryValue"`
 	DateAdded         time.Time `json:"DateAdded"`
 }

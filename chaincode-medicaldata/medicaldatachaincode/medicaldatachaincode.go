@@ -37,6 +37,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "SystolicBloodPreasure",
 			MedicalEntryValue: "130",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.January, 10, 12, 12, 15, 34, time.UTC),
 		},
 		{
@@ -44,6 +45,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "SystolicBloodPreasure",
 			MedicalEntryValue: "150",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.January, 17, 12, 30, 30, 34, time.UTC),
 		},
 		{
@@ -51,6 +53,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "SystolicBloodPreasure",
 			MedicalEntryValue: "143",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.February, 15, 16, 12, 15, 34, time.UTC),
 		},
 		{
@@ -58,6 +61,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "HeartRate",
 			MedicalEntryValue: "80",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.February, 15, 16, 12, 15, 34, time.UTC),
 		},
 		{
@@ -65,6 +69,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "SystolicBloodPreasure",
 			MedicalEntryValue: "110",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.January, 11, 12, 12, 15, 34, time.UTC),
 		},
 		{
@@ -72,6 +77,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "SystolicBloodPreasure",
 			MedicalEntryValue: "113",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.July, 25, 9, 12, 15, 34, time.UTC),
 		},
 		{
@@ -79,6 +85,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			PatientID:         "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US",
 			MedicalEntryName:  "HeartRate",
 			MedicalEntryValue: "150",
+			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.July, 26, 12, 12, 15, 34, time.UTC),
 		},
 	}
@@ -99,7 +106,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 }
 
 // AddEntry issues a new entry to the world state with given details.
-func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryValue string, dateAdded time.Time, nonce string) error {
+func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryType string, medicalEntryValue string, nonce string) error {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
 
@@ -134,9 +141,10 @@ func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionCo
 	medicalEntry := medicaldatastructs.MedicalEntry{
 		ID:                id,
 		PatientID:         patientID,
+		MedicalEntryType:  medicalEntryType,
 		MedicalEntryName:  medicalEntryName,
 		MedicalEntryValue: medicalEntryValue,
-		DateAdded:         dateAdded,
+		DateAdded:         time.Now(),
 	}
 	medicalEntryJSON, err := json.Marshal(medicalEntry)
 	if err != nil {
@@ -192,7 +200,7 @@ func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionC
 }
 
 // UpdateMedicalEntry updates an existing medical entry in the world state with provided parameters.
-func (s *MedicalDataSmartContract) UpdateMedicalEntry(ctx contractapi.TransactionContextInterface, id string, patientID string, medicalEntryName string, medicalEntryValue string, dateAdded time.Time) error {
+func (s *MedicalDataSmartContract) UpdateMedicalEntry(ctx contractapi.TransactionContextInterface, id string, patientID string, medicalEntryName string, medicalEntryType string, medicalEntryValue string) error {
 	exists, err := s.MedicalEntryExists(ctx, id)
 	if err != nil {
 		return err
@@ -236,8 +244,9 @@ func (s *MedicalDataSmartContract) UpdateMedicalEntry(ctx contractapi.Transactio
 		ID:                id,
 		PatientID:         patientID,
 		MedicalEntryName:  medicalEntryName,
+		MedicalEntryType:  medicalEntryType,
 		MedicalEntryValue: medicalEntryValue,
-		DateAdded:         dateAdded,
+		DateAdded:         medicalEntry.DateAdded,
 	}
 	medicalEntryJSON, err = json.Marshal(medicalEntry)
 	if err != nil {

@@ -15,13 +15,19 @@ import (
 
 const TOKEN_VALID_MINUTES = 5
 
+const INDEX_NAME = "tokens"
+const KEY_NAME = "tokens"
+
 type ComputationTokenSmartContract struct {
 	contractapi.Contract
 }
 
 // AddEntry issues a new entry to the world state with given details.
 func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string) (*tokenapi.Token, error) {
-	id := ctx.GetStub().GetTxID()
+	x509, _ := cid.GetX509Certificate(ctx.GetStub())
+	userCN := x509.Subject.ToRDNSequence().String()
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, ctx.GetStub().GetTxID()})
+
 	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
 		return nil, err
@@ -29,8 +35,6 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	timeRequested := time.Unix(int64(timestampRequested.GetSeconds()), int64(timestampRequested.GetNanos())).UTC()
 
 	expirationTime := timeRequested.Add(time.Minute * time.Duration(TOKEN_VALID_MINUTES))
-
-	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 
 	err = cid.AssertAttributeValue(ctx.GetStub(), "RequestTokenRole", "1")
 	if err != nil {
@@ -89,6 +93,36 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	return &token, nil
 }
 
+// ReadUserTokens returns all tokens that belong to current user
+func (s *ComputationTokenSmartContract) ReadUserTokens(ctx contractapi.TransactionContextInterface) ([]*tokenapi.Token, error) {
+	x509, _ := cid.GetX509Certificate(ctx.GetStub())
+	id := []string{KEY_NAME, x509.Subject.ToRDNSequence().String()}
+
+	resultsIterator, err := ctx.GetStub().GetStateByPartialCompositeKey(INDEX_NAME, id)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var tokens []*tokenapi.Token
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var token tokenapi.Token
+		err = json.Unmarshal(queryResponse.Value, &token)
+		if err != nil {
+			return nil, err
+		}
+
+		tokens = append(tokens, &token)
+	}
+
+	return tokens, nil
+}
+
 // ReadToken returns the token entry stored in the world state with given id.
 func (s *ComputationTokenSmartContract) ReadToken(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
 	tokenJSON, err := ctx.GetStub().GetState(id)
@@ -114,29 +148,29 @@ func (s *ComputationTokenSmartContract) ReadToken(ctx contractapi.TransactionCon
 }
 
 // Compute method launches alghoritm provided it has correct token
-func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionContextInterface, id string) (string, error) {
+func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
 	tokenJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
-		return "", fmt.Errorf("ComputationTokenSmartContract:Compute: failed to read from world state: %v", err)
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to read from world state: %v", err)
 	}
 	if tokenJSON == nil {
-		return "", fmt.Errorf("ComputationTokenSmartContract:Compute: token %s does not exist", id)
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token %s does not exist", id)
 	}
 
 	var token tokenapi.Token
 	err = json.Unmarshal(tokenJSON, &token)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	tokenValid, err := isTokenValid(ctx, token)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if !tokenValid {
-		return "", fmt.Errorf("ComputationTokenSmartContract:Compute: token is invalid")
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token is invalid")
 	}
 
 	nonce_byte, _ := ctx.GetStub().GetCreator()
@@ -157,11 +191,28 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 	response := ctx.GetStub().InvokeChaincode("examplealghorytm", queryArgs, "")
 
 	if response.Status != shim.OK {
-		return "", fmt.Errorf("ComputationTokenSmartContract:Compute: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
 	}
 
-	return string(response.Payload), nil
+	var ret tokenapi.Ret
+	err = json.Unmarshal(response.Payload, &ret)
+	if err != nil {
+		return nil, err
+	}
 
+	token.Ret = ret
+
+	tokenJSON, err = json.Marshal(token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.GetStub().PutState(id, tokenJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return &token, nil
 }
 
 // GetAllEntriesAdmin returns all roken entries found in world state. Only admin can execute this
