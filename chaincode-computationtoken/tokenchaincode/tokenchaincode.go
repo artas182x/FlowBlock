@@ -32,7 +32,10 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 
-	// TODO Permission logic here
+	err = cid.AssertAttributeValue(ctx.GetStub(), "RequestTokenRole", "1")
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:RequestToken: No access to RequestToken")
+	}
 
 	params := []string{"ListAvailableMethods"}
 	queryArgs := make([][]byte, len(params))
@@ -195,6 +198,7 @@ func (s *ComputationTokenSmartContract) GetAllEntriesAdmin(ctx contractapi.Trans
 	return tokens, nil
 }
 
+// Check if token in valid (only date and time and owner is checked)
 func isTokenValid(ctx contractapi.TransactionContextInterface, token tokenapi.Token) (bool, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	if token.UserRequested != x509.Subject.ToRDNSequence().String() {

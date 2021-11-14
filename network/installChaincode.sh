@@ -3,6 +3,8 @@
 set -e
 set -x
 
+export $(./setOrgEnv.sh Org1 | xargs)
+
 export FABRIC_CFG_PATH=$PWD/../config/
 export PATH=${PWD}/../bin:$PATH 
 

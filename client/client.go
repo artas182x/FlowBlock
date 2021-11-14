@@ -94,7 +94,7 @@ func main() {
 
 	contract = network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
 
-	log.Println("--> Evaluate Transaction: RequestToken")
+	log.Println("--> Evaluate Transaction: RequestToken for AvgBloodPreasure")
 	result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
 	if err != nil {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
@@ -107,8 +107,28 @@ func main() {
 		log.Fatalf("Failed decode json %v", err)
 	}
 
-	log.Println("--> Evaluate Transaction: Compute")
+	log.Println("--> Evaluate Transaction: Compute AvgBloodPreasure")
 	result, err = contract.EvaluateTransaction("Compute", token.ID)
+	if err != nil {
+		log.Fatalf("Failed to evaluate transaction: %v", err)
+	}
+	log.Println(string(result))
+
+	log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")
+	result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
+	if err != nil {
+		log.Fatalf("Failed to evaluate transaction: %v", err)
+	}
+	log.Println(string(result))
+
+	var token2 Token
+	err = json.Unmarshal(result, &token2)
+	if err != nil {
+		log.Fatalf("Failed decode json %v", err)
+	}
+
+	log.Println("--> Evaluate Transaction: Compute LongRunningMethod")
+	result, err = contract.EvaluateTransaction("Compute", token2.ID)
 	if err != nil {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
 	}

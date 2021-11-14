@@ -1,12 +1,12 @@
 package examplealghorytm
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-computationtoken/tokenapi"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -16,24 +16,7 @@ type ExampleAlghorytmSmartContract struct {
 	contractapi.Contract
 }
 
-type Method struct {
-	Name        string `json:"name"`
-	Args        string `json:"args"`
-	RetType     string `json:"retType"`
-	Description string `json:"description"`
-}
-
-type Token struct {
-	ID             string    `json:"ID"` //Must be string
-	UserRequested  string    `json:userRequested`
-	ChaincodeName  string    `json:chaincodeName`
-	Method         string    `json:method`
-	Arguments      string    `json:arguments`
-	TimeRequested  time.Time `json:timeRequested`
-	ExpirationTime time.Time `json.expirationTime`
-}
-
-var METHODS = []Method{
+var METHODS = []tokenapi.Method{
 	{
 		Name:        "ExampleAlghorytmSmartContract:AvgBloodPreasure",
 		Args:        "patientID:string;startDateTimestamp:string;endDateTimestamp:string",
@@ -54,21 +37,10 @@ var METHODS = []Method{
 	},
 }
 
-func isNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
-	creatorByte, err := ctx.GetStub().GetCreator()
-	if err != nil {
-		return false, err
-	}
-
-	creator := base64.StdEncoding.EncodeToString(creatorByte)
-
-	fmt.Printf("ExampleAlghorytmSmartContract:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
-	return creator == nonceStr, nil
-}
-
+// Calculates average blood preasure for given patient and data range
 func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
 
-	isNonceValid, err := isNonceValid(ctx, nonce)
+	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
@@ -112,9 +84,10 @@ func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.Transac
 	return fmt.Sprint(ret), nil
 }
 
+// Calculates maximum heart rate for given patient and data range
 func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (string, error) {
 
-	isNonceValid, err := isNonceValid(ctx, nonce)
+	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
@@ -159,14 +132,15 @@ func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 	return fmt.Sprint(max), nil
 }
 
-func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, token string, patientID string) (string, error) {
+// Some long running alghorytm as an example
+func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, patientID string) (string, error) {
 
-	isNonceValid, err := isNonceValid(ctx, nonce)
+	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
 		return "", err
 	}
 	if !isNonceValid {
-		return "", fmt.Errorf("ExampleAlghorytmSmartContract:MaxHeartRate: Nonce is invalid")
+		return "", fmt.Errorf("ExampleAlghorytmSmartContract:LongRunningMethod: Nonce is invalid")
 	}
 
 	time.Sleep(60 * time.Second)
@@ -177,6 +151,6 @@ func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.Transa
 }
 
 // Returns all available computation methods
-func (s *ExampleAlghorytmSmartContract) ListAvailableMethods(ctx contractapi.TransactionContextInterface) ([]Method, error) {
+func (s *ExampleAlghorytmSmartContract) ListAvailableMethods(ctx contractapi.TransactionContextInterface) ([]tokenapi.Method, error) {
 	return METHODS, nil
 }

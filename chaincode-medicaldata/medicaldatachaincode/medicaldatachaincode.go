@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-computationtoken/tokenapi"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/patientchaincode"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
@@ -119,7 +120,7 @@ func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionCo
 	if !canWrite && !canCompute {
 		fmt.Errorf("MedicalDataSmartContract:AddMedicalEntry: user does not have write/compute permissions")
 	} else if !canWrite && canCompute {
-		isNonceValid, err := isNonceValid(ctx, nonce)
+		isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 		if err != nil {
 			return err
 		}
@@ -178,7 +179,7 @@ func (s *MedicalDataSmartContract) ReadMedicalEntry(ctx contractapi.TransactionC
 	if !canRead && !canCompute {
 		return nil, fmt.Errorf("MedicalDataSmartContract:ReadMedicalEntry: user does not have read/compute permissions to %s", id)
 	} else if !canRead && canCompute {
-		isNonceValid, err := isNonceValid(ctx, nonce)
+		isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 		if err != nil {
 			return nil, err
 		}
@@ -363,7 +364,7 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 		if !canRead && !canCompute {
 			return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: user does not have enough read/compute permissions")
 		} else if !canRead && canCompute {
-			isNonceValid, err := isNonceValid(ctx, nonce)
+			isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 			if err != nil {
 				return nil, err
 			}

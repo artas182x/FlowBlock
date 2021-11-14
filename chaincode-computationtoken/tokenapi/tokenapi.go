@@ -25,6 +25,11 @@ type Token struct {
 	ExpirationTime time.Time `json.expirationTime`
 }
 
+// Check whether nonce provided in parameter is equal to actual nonce. Can be used to check
+// whether method has been executed by other method/chaincode. We should use this function
+// to forbid users from direct access to alghorytm function. Each alghorytm should use this
+// function before computation starts
+// Nonce is in fact ctx.GetStub().GetCreator() converted to base64
 func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
 	creatorByte, err := ctx.GetStub().GetCreator()
 	if err != nil {
