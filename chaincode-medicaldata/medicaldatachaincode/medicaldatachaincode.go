@@ -107,18 +107,15 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 
 // AddEntry issues a new entry to the world state with given details.
 func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryType string, medicalEntryValue string, nonce string) error {
-	x509, _ := cid.GetX509Certificate(ctx.GetStub())
-	userCN := x509.Subject.ToRDNSequence().String()
-
 	patientContract := new(patientchaincode.PatientSmartContract)
 
-	canWrite, err := patientContract.CanWrite(ctx, userCN)
+	canWrite, err := patientContract.CanWrite(ctx, patientID)
 
 	if err != nil {
 		return err
 	}
 
-	canCompute, err := patientContract.CanCompute(ctx, userCN)
+	canCompute, err := patientContract.CanCompute(ctx, patientID)
 
 	if err != nil {
 		return err
@@ -138,13 +135,19 @@ func (s *MedicalDataSmartContract) AddMedicalEntry(ctx contractapi.TransactionCo
 
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID, medicalEntryName, ctx.GetStub().GetTxID()})
 
+	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	timeRequested := time.Unix(int64(timestampRequested.GetSeconds()), int64(timestampRequested.GetNanos())).UTC()
+
 	medicalEntry := medicaldatastructs.MedicalEntry{
 		ID:                id,
 		PatientID:         patientID,
 		MedicalEntryType:  medicalEntryType,
 		MedicalEntryName:  medicalEntryName,
 		MedicalEntryValue: medicalEntryValue,
-		DateAdded:         time.Now(),
+		DateAdded:         timeRequested,
 	}
 	medicalEntryJSON, err := json.Marshal(medicalEntry)
 	if err != nil {

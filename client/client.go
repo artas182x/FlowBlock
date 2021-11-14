@@ -114,25 +114,27 @@ func main() {
 	}
 	log.Println(string(result))
 
-	log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")
-	result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+	/*
+		log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
 
-	var token2 Token
-	err = json.Unmarshal(result, &token2)
-	if err != nil {
-		log.Fatalf("Failed decode json %v", err)
-	}
+		var token2 Token
+		err = json.Unmarshal(result, &token2)
+		if err != nil {
+			log.Fatalf("Failed decode json %v", err)
+		}
 
-	log.Println("--> Evaluate Transaction: Compute LongRunningMethod")
-	result, err = contract.EvaluateTransaction("Compute", token2.ID)
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+		log.Println("--> Evaluate Transaction: Compute LongRunningMethod")
+		result, err = contract.EvaluateTransaction("Compute", token2.ID)
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
+	*/
 
 	log.Println("============ application-golang ends ============")
 
