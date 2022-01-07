@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -61,7 +60,7 @@ func main() {
 	}
 	defer gw.Close()
 
-	network, err := gw.GetNetwork("medicalsystem")
+	_, err = gw.GetNetwork("medicalsystem")
 	if err != nil {
 		log.Fatalf("Failed to get network: %v", err)
 	}
@@ -75,44 +74,45 @@ func main() {
 	}
 	log.Println(string(result))
 	*/
+	/*
+		contract := network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
+		log.Println("--> Evaluate Transaction: GetAllEntriesAdmin")
+		result, err := contract.EvaluateTransaction("GetAllEntriesAdmin")
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
 
-	contract := network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
-	log.Println("--> Evaluate Transaction: GetAllEntriesAdmin")
-	result, err := contract.EvaluateTransaction("GetAllEntriesAdmin")
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+		contract = network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
+		log.Println("--> Evaluate Transaction: GetPatientMedicalEntries")
+		result, err = contract.EvaluateTransaction("GetPatientMedicalEntries", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", "1573657134", "1636815534", "786cd6b55a09f12441051dbbb9f44393b55187eb4cb726391fa4b1b5aa307baa")
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
 
-	contract = network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
-	log.Println("--> Evaluate Transaction: GetPatientMedicalEntries")
-	result, err = contract.EvaluateTransaction("GetPatientMedicalEntries", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", "1573657134", "1636815534", "786cd6b55a09f12441051dbbb9f44393b55187eb4cb726391fa4b1b5aa307baa")
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+		contract = network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
 
-	contract = network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
+		log.Println("--> Evaluate Transaction: RequestToken for AvgBloodPreasure")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
 
-	log.Println("--> Evaluate Transaction: RequestToken for AvgBloodPreasure")
-	result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+		var token Token
+		err = json.Unmarshal(result, &token)
+		if err != nil {
+			log.Fatalf("Failed decode json %v", err)
+		}
 
-	var token Token
-	err = json.Unmarshal(result, &token)
-	if err != nil {
-		log.Fatalf("Failed decode json %v", err)
-	}
-
-	log.Println("--> Evaluate Transaction: Compute AvgBloodPreasure")
-	result, err = contract.EvaluateTransaction("Compute", token.ID)
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println(string(result))
+		log.Println("--> Evaluate Transaction: Compute AvgBloodPreasure")
+		result, err = contract.EvaluateTransaction("Compute", token.ID)
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %v", err)
+		}
+		log.Println(string(result))
+	*/
 
 	/*
 		log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")

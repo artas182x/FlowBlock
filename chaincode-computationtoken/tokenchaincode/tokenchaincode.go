@@ -72,7 +72,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 
 	token := tokenapi.Token{
-		ID:             id,
+		ID:             base64.URLEncoding.EncodeToString([]byte(id)),
 		UserRequested:  x509.Subject.ToRDNSequence().String(),
 		ChaincodeName:  chaincodeName,
 		Method:         method,
@@ -91,6 +91,29 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, err
 	}
 	return &token, nil
+}
+
+// GetAvailableMethods returns method available by given chaincode
+func (s *ComputationTokenSmartContract) GetAvailableMethods(ctx contractapi.TransactionContextInterface, chaincodeName string) ([]tokenapi.Method, error) {
+	params := []string{"ListAvailableMethods"}
+	queryArgs := make([][]byte, len(params))
+	for i, arg := range params {
+		queryArgs[i] = []byte(arg)
+	}
+
+	response := ctx.GetStub().InvokeChaincode(chaincodeName, queryArgs, "")
+
+	if response.Status != shim.OK {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:GetAvailableMethods: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
+	}
+
+	var methods []tokenapi.Method
+	err := json.Unmarshal(response.Payload, &methods)
+	if err != nil {
+		return nil, err
+	}
+
+	return methods, nil
 }
 
 // ReadUserTokens returns all tokens that belong to current user
@@ -117,6 +140,8 @@ func (s *ComputationTokenSmartContract) ReadUserTokens(ctx contractapi.Transacti
 			return nil, err
 		}
 
+		token.ID = base64.URLEncoding.EncodeToString([]byte(token.ID))
+
 		tokens = append(tokens, &token)
 	}
 
@@ -125,7 +150,11 @@ func (s *ComputationTokenSmartContract) ReadUserTokens(ctx contractapi.Transacti
 
 // ReadToken returns the token entry stored in the world state with given id.
 func (s *ComputationTokenSmartContract) ReadToken(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
-	tokenJSON, err := ctx.GetStub().GetState(id)
+	decodedId, err := base64.URLEncoding.DecodeString(id)
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
+	}
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
 	if err != nil {
 		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to read from world state: %v", err)
 	}
@@ -149,7 +178,11 @@ func (s *ComputationTokenSmartContract) ReadToken(ctx contractapi.TransactionCon
 
 // Compute method launches alghoritm provided it has correct token
 func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
-	tokenJSON, err := ctx.GetStub().GetState(id)
+	decodedId, err := base64.URLEncoding.DecodeString(id)
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
+	}
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
 	if err != nil {
 		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to read from world state: %v", err)
 	}
@@ -207,7 +240,7 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 		return nil, err
 	}
 
-	err = ctx.GetStub().PutState(id, tokenJSON)
+	err = ctx.GetStub().PutState(string(decodedId), tokenJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -242,6 +275,8 @@ func (s *ComputationTokenSmartContract) GetAllEntriesAdmin(ctx contractapi.Trans
 		if err != nil {
 			return nil, err
 		}
+
+		token.ID = base64.URLEncoding.EncodeToString([]byte(token.ID))
 
 		tokens = append(tokens, &token)
 	}

@@ -1,0 +1,142 @@
+definitions:
+  controllers.RequestTokenInput:
+    properties:
+      arguments:
+        items:
+          type: string
+        type: array
+      chaincodeName:
+        type: string
+      method:
+        type: string
+    required:
+    - arguments
+    - chaincodeName
+    - method
+    type: object
+  models.Login:
+    properties:
+      certificate:
+        type: string
+      mspid:
+        type: string
+      privateKey:
+        type: string
+    required:
+    - certificate
+    - mspid
+    - privateKey
+    type: object
+info:
+  contact: {}
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User data
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Login
+      tags:
+      - login
+  /v1/computation/availablemethods/{chaincode_name}:
+    get:
+      parameters:
+      - description: Chaincode name
+        in: path
+        name: chaincode_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: GetAvailableMethods
+      tags:
+      - Computation
+  /v1/computation/requesttoken:
+    post:
+      parameters:
+      - description: Request tokeninput data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.RequestTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: RequestToken
+      tags:
+      - Computation
+  /v1/computation/token/{token_id}:
+    get:
+      parameters:
+      - description: Token id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: ReadToken
+      tags:
+      - Computation
+  /v1/computation/token/{token_id}/start:
+    post:
+      parameters:
+      - description: Token id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: StartComputation
+      tags:
+      - Computation
+  /v1/computation/usertokens:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: ReadUserTokens
+      tags:
+      - Computation
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

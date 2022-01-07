@@ -1,0 +1,231 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "login"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "User data",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Login"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/computation/availablemethods/{chaincode_name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "GetAvailableMethods",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chaincode name",
+                        "name": "chaincode_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/computation/requesttoken": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "RequestToken",
+                "parameters": [
+                    {
+                        "description": "Request tokeninput data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.RequestTokenInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/computation/token/{token_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "ReadToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/computation/token/{token_id}/start": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "StartComputation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/computation/usertokens": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "ReadUserTokens",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.RequestTokenInput": {
+            "type": "object",
+            "required": [
+                "arguments",
+                "chaincodeName",
+                "method"
+            ],
+            "properties": {
+                "arguments": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "chaincodeName": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Login": {
+            "type": "object",
+            "required": [
+                "certificate",
+                "mspid",
+                "privateKey"
+            ],
+            "properties": {
+                "certificate": {
+                    "type": "string"
+                },
+                "mspid": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
