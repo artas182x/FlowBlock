@@ -32,11 +32,6 @@ func main() {
 		port = "8000"
 	}
 
-	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
-	if err != nil {
-		log.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
-	}
-
 	docs.SwaggerInfo.BasePath = "/api"
 
 	services.InitCelery()

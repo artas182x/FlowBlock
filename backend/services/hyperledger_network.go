@@ -10,14 +10,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-var ccpPath = filepath.Join(
-	"..",
-	"network",
-	"organizations",
-	"peerOrganizations",
-	"org1.example.com",
-	"connection-org1.yaml",
-)
+var ccpPath = "network.yaml"
 
 func GetNetwork(loginVals models.Login) (*gateway.Network, error) {
 	wallet := gateway.NewInMemoryWallet()

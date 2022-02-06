@@ -58,9 +58,13 @@ func runTask(Certificate string, PrivateKey string, MspID string, TokenId string
 }
 
 func InitCelery() {
+  redisHost := os.Getenv("REDIS_URL")
+  if redisHost == "" {
+  	redisHost = "redis://localhost:6379"
+  }
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.DialURL("redis://localhost:6379")
+			c, err := redis.DialURL(redisHost)
 			if err != nil {
 				return nil, err
 			}
