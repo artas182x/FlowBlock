@@ -2,24 +2,28 @@
   <div class="container">
     <header class="jumbotron">
       <h3>
-        <strong>{{currentUser.username}}</strong> Profile
+        Profile
       </h3>
     </header>
     <p>
       <strong>Token:</strong>
-      {{currentUser.accessToken.substring(0, 20)}} ... {{currentUser.accessToken.substr(currentUser.accessToken.length - 20)}}
+      {{ loginData.token.substring(0, 20) }} ... {{ loginData.token.substr(loginData.token.length - 20) }}
+    </p>
+    <p>
+      <strong>Certificate:</strong>
+      {{ loginData.user.Login.certificate.substring(40, 60)  }} ...
     </p>
     <p>
       <strong>Id:</strong>
-      {{currentUser.id}}
+      {{ loginData.user.UserName }}
     </p>
     <p>
-      <strong>Email:</strong>
-      {{currentUser.email}}
+      <strong>Organization ID:</strong>
+      {{ loginData.user.Login.mspid }}
     </p>
-    <strong>Authorities:</strong>
+    <strong>Roles:</strong>
     <ul>
-      <li v-for="role in currentUser.roles" :key="role">{{role}}</li>
+      <li v-for="role in loginData.user.Roles" :key="role">{{role}}</li>
     </ul>
   </div>
 </template>
@@ -28,12 +32,12 @@
 export default {
   name: 'Profile',
   computed: {
-    currentUser() {
+    loginData() {
       return this.$store.state.auth.user;
     }
   },
   mounted() {
-    if (!this.currentUser) {
+    if (!this.loginData) {
       this.$router.push('/login');
     }
   }

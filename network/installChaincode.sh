@@ -20,10 +20,10 @@ export ORDERER_ADDRESS=orderer.example.com
 CHANNEL_NAME=medicalsystem
 MEDICALDATA_CHAINCODE_NAME=medicaldata
 COMPUTETOKEN_CHAINCODE_NAME=computationtoken
-EXAMPLEALGHORYTMM_CHAINCODE_NAME=examplealghorytm
+EXAMPLEALGHORYTMM_CHAINCODE_NAME=examplealgorithm
 MEDICALDATA_CHAINCODE_LOCATION=../chaincode-medicaldata
 COMPUTETOKEN_CHAINCODE_LOCATION=../chaincode-computationtoken
-EXAMPLEALGHORYTMM_CHAINCODE_LOCATION=../chaincode-examplealghorytm
+EXAMPLEALGHORYTMM_CHAINCODE_LOCATION=../chaincode-examplealgorithm
 
 ./network.sh createChannel -c $CHANNEL_NAME
 ./network.sh deployCC -ccn $MEDICALDATA_CHAINCODE_NAME -ccp $MEDICALDATA_CHAINCODE_LOCATION -ccl go -c $CHANNEL_NAME

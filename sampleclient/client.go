@@ -60,7 +60,7 @@ func main() {
 	}
 	defer gw.Close()
 
-	_, err = gw.GetNetwork("medicalsystem")
+	network, err := gw.GetNetwork("medicalsystem")
 	if err != nil {
 		log.Fatalf("Failed to get network: %v", err)
 	}
@@ -74,15 +74,16 @@ func main() {
 	}
 	log.Println(string(result))
 	*/
-	/*
-		contract := network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
-		log.Println("--> Evaluate Transaction: GetAllEntriesAdmin")
-		result, err := contract.EvaluateTransaction("GetAllEntriesAdmin")
-		if err != nil {
-			log.Fatalf("Failed to evaluate transaction: %v", err)
-		}
-		log.Println(string(result))
 
+	contract := network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
+	log.Println("--> Evaluate Transaction: GetAllEntriesAdmin")
+	result, err := contract.EvaluateTransaction("GetAllEntriesAdmin")
+	if err != nil {
+		log.Fatalf("Failed to evaluate transaction: %v", err)
+	}
+	log.Println(string(result))
+
+	/*
 		contract = network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
 		log.Println("--> Evaluate Transaction: GetPatientMedicalEntries")
 		result, err = contract.EvaluateTransaction("GetPatientMedicalEntries", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", "1573657134", "1636815534", "786cd6b55a09f12441051dbbb9f44393b55187eb4cb726391fa4b1b5aa307baa")
@@ -94,7 +95,7 @@ func main() {
 		contract = network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
 
 		log.Println("--> Evaluate Transaction: RequestToken for AvgBloodPreasure")
-		result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %v", err)
 		}
@@ -116,7 +117,7 @@ func main() {
 
 	/*
 		log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")
-		result, err = contract.SubmitTransaction("RequestToken", "examplealghorytm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %v", err)
 		}

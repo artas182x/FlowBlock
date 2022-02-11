@@ -140,8 +140,6 @@ func (s *ComputationTokenSmartContract) ReadUserTokens(ctx contractapi.Transacti
 			return nil, err
 		}
 
-		token.ID = base64.URLEncoding.EncodeToString([]byte(token.ID))
-
 		tokens = append(tokens, &token)
 	}
 
@@ -221,7 +219,7 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 		queryArgs[i] = []byte(arg)
 	}
 
-	response := ctx.GetStub().InvokeChaincode("examplealghorytm", queryArgs, "")
+	response := ctx.GetStub().InvokeChaincode("examplealgorithm", queryArgs, "")
 
 	if response.Status != shim.OK {
 		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)

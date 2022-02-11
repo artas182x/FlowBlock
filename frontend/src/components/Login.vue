@@ -35,7 +35,7 @@ export default {
   },
   data() {
     const schema = yup.object().shape({
-      certificate: yup.string().required("Username is required!"),
+      certificate: yup.string().required("Certificate is required!"),
       privateKey: yup.string().required("Private Key is required!"),
       mspid: yup.string().required("MSP ID"),
     });

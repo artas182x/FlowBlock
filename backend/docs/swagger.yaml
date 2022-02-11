@@ -67,6 +67,18 @@ paths:
       summary: GetAvailableMethods
       tags:
       - Computation
+  /v1/computation/queue:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: GetQueue
+      tags:
+      - Computation
   /v1/computation/requesttoken:
     post:
       parameters:

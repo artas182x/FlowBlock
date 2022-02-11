@@ -1,4 +1,4 @@
-module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-examplealghorytm
+module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-examplealgorithm
 
 go 1.14
 

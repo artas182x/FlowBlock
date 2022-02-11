@@ -58,10 +58,10 @@ func runTask(Certificate string, PrivateKey string, MspID string, TokenId string
 }
 
 func InitCelery() {
-  redisHost := os.Getenv("REDIS_URL")
-  if redisHost == "" {
-  	redisHost = "redis://localhost:6379"
-  }
+	redisHost := os.Getenv("REDIS_URL")
+	if redisHost == "" {
+		redisHost = "redis://localhost:6379"
+	}
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.DialURL(redisHost)
@@ -93,8 +93,9 @@ func QueueComputation(Login models.Login, TokenId string) (*models.ComputationDa
 		return nil, err
 	}
 	computation := models.ComputationData{
-		TaskID:          asyncResult.TaskID,
+		TokenId:         TokenId,
 		UserCertificate: Login.Certificate,
+		TaskResult:      asyncResult,
 	}
 	computations = append(computations, computation)
 
@@ -103,10 +104,8 @@ func QueueComputation(Login models.Login, TokenId string) (*models.ComputationDa
 
 func HasTaskFinished(TaskID string) (bool, error) {
 	for _, element := range computations {
-		if element.TaskID == TaskID {
-			task := gocelery.AsyncResult{
-				TaskID: element.TaskID,
-			}
+		if element.TaskResult.TaskID == TaskID {
+			task := element.TaskResult
 			return task.Ready()
 		}
 	}
@@ -119,7 +118,7 @@ func GetUsersRunningComputations(user models.Login) []models.TaskResult {
 	for _, element := range computations {
 		if element.UserCertificate == user.Certificate {
 
-			taskResult, _ := GetTaskResult(element.TaskID)
+			taskResult, _ := GetTaskResult(element.TaskResult.TaskID, user)
 
 			if taskResult != nil && !taskResult.Finished {
 				tasksRet = append(tasksRet, *taskResult)
@@ -130,18 +129,29 @@ func GetUsersRunningComputations(user models.Login) []models.TaskResult {
 	return tasksRet
 }
 
-func GetTaskResult(TaskID string) (*models.TaskResult, error) {
+func GetTaskResult(TaskID string, User models.Login) (*models.TaskResult, error) {
 	for _, element := range computations {
-		if element.TaskID == TaskID {
-			task := gocelery.AsyncResult{
-				TaskID: element.TaskID,
-			}
-			ready, err := task.Ready()
-			if err != nil {
-				return nil, err
-			}
+		if element.TaskResult.TaskID == TaskID {
+			task := element.TaskResult
+
+			ready, _ := task.Ready()
+
 			result := models.TaskResult{}
 			result.TaskID = TaskID
+
+			out, err := EvaluateTransaction(User, vars.ComputationTokenChaincodeName, vars.ComputationTokenSmartContractName, "ReadToken", element.TokenId)
+
+			if err != nil {
+				return nil, fmt.Errorf("[GetTaskResult] Error during fetching task from Blockchain", TaskID)
+			}
+
+			var token tokenapi.Token
+			err = json.Unmarshal(out, &token)
+			if err != nil {
+				return nil, fmt.Errorf("[GetTaskResult] Error during parsing task result from Blockchain")
+			}
+
+			result.Result = token
 
 			if !ready {
 				result.Finished = false
@@ -151,7 +161,7 @@ func GetTaskResult(TaskID string) (*models.TaskResult, error) {
 			res, err := task.Get(10)
 
 			if err != nil {
-				result.Finished = false
+				result.Finished = true
 				return &result, nil
 			}
 

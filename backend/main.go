@@ -26,7 +26,16 @@ func main() {
 	r := gin.Default()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(cors.Default())
+
+	corsConfig := cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+		AllowAllOrigins:  true,
+	}
+
+	r.Use(cors.New(corsConfig))
 
 	if port == "" {
 		port = "8000"
@@ -82,6 +91,7 @@ func main() {
 			if err != nil {
 				return nil, err
 			}
+			c.Set("User", user)
 			return user, nil
 
 		},
@@ -98,6 +108,24 @@ func main() {
 			c.JSON(code, gin.H{
 				"code":    code,
 				"message": message,
+			})
+		},
+		LoginResponse: func(c *gin.Context, code int, token string, expire time.Time) {
+			user, _ := c.Get("User")
+
+			/*rolesInterface := claims["roles"].([]interface{})
+
+			roles := make([]string, len(rolesInterface))
+
+			for i := 0; i < len(roles); i++ {
+				roles[i] = rolesInterface[i].(string)
+			}*/
+
+			c.JSON(http.StatusOK, gin.H{
+				"code":   http.StatusOK,
+				"token":  token,
+				"expire": expire.Format(time.RFC3339),
+				"user":   user,
 			})
 		},
 

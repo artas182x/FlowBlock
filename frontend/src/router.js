@@ -1,12 +1,11 @@
 import { createWebHistory, createRouter } from "vue-router";
 import Home from "./components/Home.vue";
 import Login from "./components/Login.vue";
-import Register from "./components/Register.vue";
+
 // lazy-loaded
 const Profile = () => import("./components/Profile.vue")
-const BoardAdmin = () => import("./components/BoardAdmin.vue")
-const BoardModerator = () => import("./components/BoardModerator.vue")
-const BoardUser = () => import("./components/BoardUser.vue")
+const BoardModerator = () => import("./components/BoardComputations.vue")
+const TokenSubmit = () =>  import("@/components/TokenSubmit");
 
 const routes = [
   {
@@ -23,33 +22,24 @@ const routes = [
     component: Login,
   },
   {
-    path: "/register",
-    component: Register,
-  },
-  {
     path: "/profile",
     name: "profile",
     // lazy-loaded
     component: Profile,
   },
   {
-    path: "/admin",
-    name: "admin",
-    // lazy-loaded
-    component: BoardAdmin,
-  },
-  {
-    path: "/mod",
-    name: "moderator",
+    path: "/computations",
+    name: "computations",
     // lazy-loaded
     component: BoardModerator,
   },
   {
-    path: "/user",
-    name: "user",
+    path: "/tokensubmit",
+    name: "tokensubmit",
     // lazy-loaded
-    component: BoardUser,
+    component: TokenSubmit,
   },
+
 ];
 
 const router = createRouter({

@@ -83,6 +83,27 @@ var doc = `{
                 }
             }
         },
+        "/v1/computation/queue": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Computation"
+                ],
+                "summary": "GetQueue",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/v1/computation/requesttoken": {
             "post": {
                 "security": [

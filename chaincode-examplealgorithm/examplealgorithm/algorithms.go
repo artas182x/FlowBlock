@@ -1,4 +1,4 @@
-package examplealghorytm
+package examplealgorithm
 
 import (
 	"encoding/json"
@@ -19,13 +19,13 @@ type ExampleAlghorytmSmartContract struct {
 var METHODS = []tokenapi.Method{
 	{
 		Name:        "ExampleAlghorytmSmartContract:AvgBloodPreasure",
-		Args:        "patientID:string;startDateTimestamp:string;endDateTimestamp:string",
+		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "float32",
 		Description: "Calculates average value of blood preasure",
 	},
 	{
 		Name:        "ExampleAlghorytmSmartContract:MaxHeartRate",
-		Args:        "patientID:string;startDateTimestamp:string;endDateTimestamp:string",
+		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "int64",
 		Description: "Calculates maximum value of heart rate",
 	},
@@ -33,7 +33,7 @@ var METHODS = []tokenapi.Method{
 		Name:        "ExampleAlghorytmSmartContract:LongRunningMethod",
 		Args:        "patientID:string",
 		RetType:     "int64",
-		Description: "Sleeps and returns current timestamp",
+		Description: "Sleeps and returns 0 is there was no error",
 	},
 }
 
@@ -164,7 +164,7 @@ func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 	return &ret, nil
 }
 
-// Some long running alghorytm as an example
+// Some long running algorithm as an example
 func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, patientID string) (*tokenapi.Ret, error) {
 
 	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)

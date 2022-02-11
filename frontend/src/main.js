@@ -1,10 +1,28 @@
+
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import "bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+
+
 import { FontAwesomeIcon } from './plugins/font-awesome'
+
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+    faCoffee,
+    faCocktail,
+    faGlassMartini,
+    faBeer,
+    faMicrochip
+} from "@fortawesome/free-solid-svg-icons";
+
+library.add(
+    faCoffee,
+    faCocktail,
+    faGlassMartini,
+    faBeer,
+    faMicrochip
+);
 
 createApp(App)
   .use(router)

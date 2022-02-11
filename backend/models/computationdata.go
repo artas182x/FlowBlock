@@ -1,6 +1,9 @@
 package models
 
+import "github.com/gocelery/gocelery"
+
 type ComputationData struct {
-	TaskID          string
+	TokenId         string
 	UserCertificate string
+	TaskResult      *gocelery.AsyncResult
 }

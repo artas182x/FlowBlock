@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
@@ -40,14 +41,30 @@ func GetAvailableMethods(c *gin.Context) {
 		return
 	}
 
-	var methods []tokenapi.Method
-	err = json.Unmarshal(out, &methods)
+	var methodsResponse []tokenapi.Method
+	err = json.Unmarshal(out, &methodsResponse)
 	if err != nil {
 		c.JSON(400, gin.H{"message": err})
 		return
 	}
 
+	var methods []models.Method
+
+	for _, method := range methodsResponse {
+
+		var arguments []models.Argument
+
+		for _, argString := range strings.Split(method.Args, ";") {
+			argStrSplit := strings.Split(argString, ":")
+			arguments = append(arguments, models.Argument{Name: argStrSplit[0], Type: argStrSplit[1]})
+		}
+
+		var method = models.Method{Name: method.Name, Description: method.Description, RetType: method.RetType, Arguments: arguments}
+		methods = append(methods, method)
+	}
+
 	c.JSON(200, methods)
+
 }
 
 // @Summary RequestToken
@@ -61,7 +78,7 @@ func GetAvailableMethods(c *gin.Context) {
 func RequestToken(c *gin.Context) {
 	var input RequestTokenInput
 	if err := c.ShouldBind(&input); err != nil {
-		c.Error(&json.SyntaxError{})
+		c.JSON(400, gin.H{"message": err.Error()})
 		return
 	}
 	user, _ := c.Get(vars.IdentityKey)
@@ -86,10 +103,10 @@ func RequestToken(c *gin.Context) {
 	err = json.Unmarshal(out, &token)
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
-		return
+	} else {
+		c.JSON(200, token)
 	}
 
-	c.JSON(200, token)
 }
 
 // @Summary ReadUserTokens
@@ -119,10 +136,10 @@ func ReadUserTokens(c *gin.Context) {
 	err = json.Unmarshal(out, &token)
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
-		return
+	} else {
+		c.JSON(200, token)
 	}
 
-	c.JSON(200, token)
 }
 
 // @Summary ReadToken
@@ -149,10 +166,9 @@ func ReadToken(c *gin.Context) {
 	err = json.Unmarshal(out, &token)
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
-		return
+	} else {
+		c.JSON(200, token)
 	}
-
-	c.JSON(200, token)
 }
 
 // @Summary StartComputation
@@ -172,9 +188,10 @@ func StartComputation(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, task)
 	}
 
-	c.JSON(200, task)
 }
 
 // @Summary GetQueue
@@ -190,5 +207,10 @@ func GetQueue(c *gin.Context) {
 
 	out := services.GetUsersRunningComputations(user.(*models.User).Login)
 
-	c.JSON(200, out)
+	if len(out) == 0 {
+		c.JSON(204, gin.H{})
+	} else {
+		c.JSON(200, out)
+	}
+
 }
