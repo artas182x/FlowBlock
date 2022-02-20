@@ -8,7 +8,7 @@ services:
       - "../../network/organizations/peerOrganizations/:/app/peerOrganizations"
     networks:
       - hyperledger
-    command: "bash -c 'rm /app/wallet2/* && cd /app && /app/generateWallet && cp /app/wallet/* /app/wallet2/ && chmod 644 /app/wallet2/*'"
+    command: "bash -c 'rm -f /app/wallet2/* && cd /app && /app/generateWallet && cp /app/wallet/* /app/wallet2/ && chmod 644 /app/wallet2/*'"
       
 networks:
   hyperledger:

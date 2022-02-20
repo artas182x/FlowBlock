@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -32,7 +33,7 @@ type ExampleAlghorytmSmartContract struct {
 	contractapi.Contract
 }
 
-const BASE_DIR = "/tmp/exalg/"
+const BASE_DIRECTRORY = "/tmp/exalg/"
 
 var METHODS = []tokenapi.Method{
 	{
@@ -131,7 +132,7 @@ func unzip(src, dest string) error {
 	return nil
 }
 
-func downloadFromS3(fileName string) error {
+func downloadFromS3(fileName string, baseDir string) error {
 
 	fmt.Printf("Downloading: %+q\n", fileName)
 
@@ -145,9 +146,9 @@ func downloadFromS3(fileName string) error {
 	}
 	newSession, _ := session.NewSession(s3Config)
 
-	os.MkdirAll(BASE_DIR, 0755)
+	os.MkdirAll(baseDir, 0755)
 
-	file, err := os.Create(BASE_DIR + fileName)
+	file, err := os.Create(baseDir + fileName)
 	if err != nil {
 		fmt.Println("Failed to create file", err)
 		return err
@@ -199,28 +200,28 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 	return image, err
 }
 
-func downloadPneumoniaModel() error {
+func downloadPneumoniaModel(baseDir string) error {
 	modelFilename := "pneumonia_model.zip"
-	err := downloadFromS3(modelFilename)
+	err := downloadFromS3(modelFilename, baseDir)
 	if err != nil {
 		return err
 	}
-	err = unzip(BASE_DIR+modelFilename, BASE_DIR+"model")
+	err = unzip(baseDir+modelFilename, baseDir+"model")
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func classifyPneumonia(imageFilename string) (float32, error) {
-	err := downloadFromS3(imageFilename)
+func classifyPneumonia(imageFilename string, baseDir string) (float32, error) {
+	err := downloadFromS3(imageFilename, baseDir)
 	if err != nil {
 		return 0.0, err
 	}
 
 	image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
 
-	img, err := getImageFromFilePath(BASE_DIR + imageFilename)
+	img, err := getImageFromFilePath(baseDir + imageFilename)
 
 	if err != nil {
 		return 0.0, err
@@ -240,7 +241,7 @@ func classifyPneumonia(imageFilename string) (float32, error) {
 
 	fmt.Printf("Loading model\n")
 
-	model := tg.LoadModel(BASE_DIR+"model", []string{"serve"}, nil)
+	model := tg.LoadModel(baseDir+"model", []string{"serve"}, nil)
 
 	results := model.Exec([]tf.Output{
 		model.Op("StatefulPartitionedCall", 0),
@@ -286,10 +287,12 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 		return &ret, nil
 	}
 
-	fmt.Printf("Cleanup: %+q\n", BASE_DIR)
-	os.RemoveAll(BASE_DIR)
+	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTRORY, rand.Intn(100000))
 
-	err = downloadPneumoniaModel()
+	fmt.Printf("Cleanup: %+q\n", baseDir)
+	os.RemoveAll(baseDir)
+
+	err = downloadPneumoniaModel(baseDir)
 
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't download model"), RetType: "string"}
@@ -297,7 +300,7 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 	}
 
 	fmt.Printf("Classifying: %+q\n", medicalEntry.MedicalEntryValue)
-	result, err := classifyPneumonia(medicalEntry.MedicalEntryValue)
+	result, err := classifyPneumonia(medicalEntry.MedicalEntryValue, baseDir)
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 		return &ret, nil
@@ -338,10 +341,12 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 		return &ret, nil
 	}
 
-	fmt.Printf("Cleanup: %+q\n", BASE_DIR)
-	os.RemoveAll(BASE_DIR)
+	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTRORY, rand.Intn(100000))
 
-	err = downloadPneumoniaModel()
+	fmt.Printf("Cleanup: %+q\n", baseDir)
+	os.RemoveAll(baseDir)
+
+	err = downloadPneumoniaModel(baseDir)
 
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't download model"), RetType: "string"}
@@ -352,7 +357,7 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 
 	for _, arg := range medicalEntries {
 		fmt.Printf("Classifying: %+q\n", arg.MedicalEntryValue)
-		result, err := classifyPneumonia(arg.MedicalEntryValue)
+		result, err := classifyPneumonia(arg.MedicalEntryValue, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 			return &ret, nil

@@ -47,22 +47,22 @@ function createOrg1() {
   
   infoln "Registering doctor 1"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name doctor1 --id.secret 123 --id.type client --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name doctor1 --id.secret 123 --id.type client --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering doctor 2"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name doctor2 --id.secret 123 --id.type client --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name doctor2 --id.secret 123 --id.type client --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering doctor 3"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name doctor3 --id.secret 123 --id.type client --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name doctor3 --id.secret 123 --id.type client --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering the org admin"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name org1admin --id.secret org1adminpw --id.type admin --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name org1admin --id.secret org1adminpw --id.type admin --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Generating the peer0 msp"
@@ -152,17 +152,17 @@ function createOrg2() {
 
   infoln "Registering patient"
   set -x
-  fabric-ca-client register --caname ca-org2 --id.name patient1 --id.secret 123 --id.type client --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
+  fabric-ca-client register --caname ca-org2 --id.name patient11 --id.secret 123 --id.type client --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
   
   infoln "Registering doctor"
   set -x
-  fabric-ca-client register --caname ca-org2 --id.name doctor1 --id.secret 123 --id.type client --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
+  fabric-ca-client register --caname ca-org2 --id.name doctor11 --id.secret 123 --id.type client --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering the org admin"
   set -x
-  fabric-ca-client register --caname ca-org2 --id.name org2admin --id.secret org2adminpw --id.type admin --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
+  fabric-ca-client register --caname ca-org2 --id.name org2admin --id.secret org2adminpw --id.type admin --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Generating the peer0 msp"
@@ -192,13 +192,13 @@ function createOrg2() {
 
   infoln "Generating the user msp"
   set -x
-  fabric-ca-client enroll -u https://patient1:123@localhost:8054 --caname ca-org2 -M "${PWD}/organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
+  fabric-ca-client enroll -u https://patient11:123@localhost:8054 --caname ca-org2 -M "${PWD}/organizations/peerOrganizations/org2.example.com/users/patient11@org2.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
-  fabric-ca-client enroll -u https://doctor1:123@localhost:8054 --caname ca-org2 -M "${PWD}/organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
+  fabric-ca-client enroll -u https://doctor11:123@localhost:8054 --caname ca-org2 -M "${PWD}/organizations/peerOrganizations/org2.example.com/users/doctor11@org2.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
-  cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/patient1@org2.example.com/msp/config.yaml"
-  cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/doctor1@org2.example.com/msp/config.yaml"
+  cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/patient11@org2.example.com/msp/config.yaml"
+  cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/doctor11@org2.example.com/msp/config.yaml"
 
   infoln "Generating the org admin msp"
   set -x

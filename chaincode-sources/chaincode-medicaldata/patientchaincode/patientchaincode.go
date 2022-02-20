@@ -164,7 +164,13 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 	// Patient always can read own values
 	if patientID == x509.Subject.ToRDNSequence().String() {
 		return true, nil
+	} else {
+		err := cid.AssertAttributeValue(ctx.GetStub(), "ReadOthersData", "1")
+		if err != nil {
+			return false, nil
+		}
 	}
+
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
@@ -189,6 +195,12 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 
 // CanRead returns whether user or org has permission to read values
 func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
+
+	err := cid.AssertAttributeValue(ctx.GetStub(), "ReadOthersData", "1")
+	if err != nil {
+		return false, nil
+	}
+
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
@@ -214,6 +226,10 @@ func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterf
 
 // CanCompute returns whether user or org has permission to read values
 func (s *PatientSmartContract) CanCompute(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
+	err := cid.AssertAttributeValue(ctx.GetStub(), "RequestTokenRole", "1")
+	if err != nil {
+		return false, nil
+	}
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, patientID})
 	patientEntryJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
