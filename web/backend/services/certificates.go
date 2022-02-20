@@ -20,6 +20,13 @@ func LoginToUser(login models.Login) (*models.User, error) {
 		return nil, err
 	}
 
+	if attributes.Contains("ReadOthersData") {
+		hfType, _, _ := attributes.Value("ReadOthersData")
+		if hfType == "1" {
+			roles = append(roles, "manage others data")
+		}
+	}
+
 	if attributes.Contains("RequestTokenRole") {
 		hfType, _, _ := attributes.Value("RequestTokenRole")
 		if hfType == "1" {
