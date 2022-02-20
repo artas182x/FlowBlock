@@ -196,13 +196,31 @@ export default {
             (response) => {
               let tokens = response.data
               let data = [];
-              const max = Math.min(limit, tokens.length);
+              const max = Math.min(offset+limit, tokens.length);
               for (let i = offset; i < max ; i++) {
+
+                let argsStrings = tokens[i]["Result"]["Arguments"].split(";")
+
+                let args = [];
+
+                argsStrings.forEach((value) => {
+                  const argStruct = value.split(":")
+                  let argVal = argStruct[0]
+                  const argName = argStruct[1]
+                  const argType = argStruct[2]
+
+                  if (argType === "ts") {
+                    argVal = moment(new Date(parseInt(argVal))).format('MMMM Do YYYY, h:mm:ss a')
+                  }
+
+                  args.push(argName + ": " + argVal)
+                });
+
                 data.push({
                   id: tokens[i]["Result"]["ID"],
                   chaincodeName: tokens[i]["Result"]["ChaincodeName"],
                   method: tokens[i]["Result"]["Method"].split(":")[1],
-                  arguments: tokens[i]["Result"]["Arguments"],
+                  arguments: args,
                   timeRequested: moment(new Date(tokens[i]["Result"]["TimeRequested"])).format('MMMM Do YYYY, h:mm:ss a'),
                   finished: tokens[i]["Finished"] ? "Yes" : "No",
                 });
@@ -232,13 +250,32 @@ export default {
             (response) => {
               let tokens = response.data
               let data = [];
-              const max = Math.min(limit, tokens.length);
+              const max = Math.min(offset+limit, tokens.length);
               for (let i = offset; i < max ; i++) {
+
+                let argsStrings = tokens[i]["Arguments"].split(";")
+
+                let args = [];
+
+                argsStrings.forEach((value) => {
+                  const argStruct = value.split(":")
+                  let argVal = argStruct[0]
+                  const argName = argStruct[1]
+                  const argType = argStruct[2]
+
+                  if (argType === "ts") {
+                     argVal = moment(new Date(parseInt(argVal))).format('MMMM Do YYYY, h:mm:ss a')
+                  }
+
+                  args.push(argName + ": " + argVal)
+
+                });
+
                 data.push({
                   id: tokens[i]["ID"],
                   chaincodeName: tokens[i]["ChaincodeName"],
                   method: tokens[i]["Method"].split(":")[1],
-                  arguments: tokens[i]["Arguments"].split(";"),
+                  arguments: args,
                   retval: tokens[i]["ret"]["RetValue"],
                   timeRequested: moment(new Date(tokens[i]["TimeRequested"])).format('MMMM Do YYYY, h:mm:ss a'),
                   expireTime: moment(new Date(tokens[i]["ExpirationTime"])).format('MMMM Do YYYY, h:mm:ss a'),
@@ -275,8 +312,8 @@ export default {
           }
         }
     )
-    this.doSearchQueue(0, 20)
-    this.doSearchTokens(0, 20)
+    this.doSearchQueue(0, 10)
+    this.doSearchTokens(0, 10)
   },
 
 }

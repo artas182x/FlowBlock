@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
@@ -16,16 +17,28 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create wallet: %v", err)
 	}
-	err = populateWallet(wallet)
-	if err != nil {
-		log.Fatalf("Failed to populate wallet contents: %v", err)
+
+	userList := []string{"Admin@org1.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "doctor3@org1.example.com", "patient1@org1.example.com",
+		"patient2@org1.example.com", "patient3@org1.example.com", "Admin@org2.example.com"}
+
+	for _, user := range userList {
+		err = populateWallet(wallet, user)
+		if err != nil {
+			log.Fatalf("Failed to populate wallet contents for user %s: %v", user, err)
+		}
 	}
+
 }
 
-func populateWallet(wallet *gateway.Wallet) error {
-	log.Println("============ Populating wallet ============")
+func populateWallet(wallet *gateway.Wallet, userOrg string) error {
+	log.Printf("============ Populating wallet for user %s ============", userOrg)
+	org := strings.Split(userOrg, "@")[1]
 	credPath := filepath.Join(
-	  "/app",
+		"/app",
+		"peerOrganizations",
+		org,
+		"users",
+		userOrg,
 		"msp",
 	)
 
@@ -53,5 +66,5 @@ func populateWallet(wallet *gateway.Wallet) error {
 
 	identity := gateway.NewX509Identity("Org1MSP", string(cert), string(key))
 
-	return wallet.Put("appUser", identity)
+	return wallet.Put(userOrg, identity)
 }

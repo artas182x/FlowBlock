@@ -131,9 +131,6 @@ export default {
       this.tableMedicalData.isLoading = true;
       setTimeout(() => {
         this.tableMedicalData.isReSearch = offset === undefined;
-        if (offset >= 10 || limit >= 20) {
-          limit = 20;
-        }
 
         let request = {"medicalEntryName": "", "dateStartTimestamp": "0", "dateEndTimestamp": Math.floor(Date.now() / 1000).toString()}
 
@@ -141,7 +138,7 @@ export default {
             (response) => {
               let dataResponse = response.data
               let data = [];
-              const max = Math.min(limit, dataResponse.length);
+              const max = Math.min(offset+limit, dataResponse.length);
               for (let i = offset; i < max ; i++) {
                 data.push({
                   ID: dataResponse[i]["ID"],
@@ -182,7 +179,7 @@ export default {
           }
         }
     )
-    this.doSearchMedicalData(0, 20)
+    this.doSearchMedicalData(0, 10)
   },
 
 }

@@ -5,10 +5,10 @@ services:
     build: .
     volumes:
       - "${PWD}/wallet:/app/wallet2"
-      - "../../network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp:/app/msp"
+      - "../../network/organizations/peerOrganizations/:/app/peerOrganizations"
     networks:
       - hyperledger
-    command: "bash -c 'cd /app && /app/generateWallet && cp /app/wallet/* /app/wallet2/ && chmod 644 /app/wallet2/*'"
+    command: "bash -c 'rm /app/wallet2/* && cd /app && /app/generateWallet && cp /app/wallet/* /app/wallet2/ && chmod 644 /app/wallet2/*'"
       
 networks:
   hyperledger:

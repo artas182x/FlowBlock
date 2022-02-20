@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -59,10 +60,14 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	if err != nil {
 		return nil, err
 	}
+
+	var selectedMethod tokenapi.Method
+
 	for _, element := range methods {
 		if element.Name == method {
 			if len(strings.Split(element.Args, ";")) == len(strings.Split(arguments, ";")) {
 				found = true
+				selectedMethod = element
 				break
 			}
 		}
@@ -71,12 +76,23 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, fmt.Errorf("ComputationTokenSmartContract:RequestToken: Method %s with arguments %s not found in %s", method, arguments, chaincodeName)
 	}
 
+	var mergedArgsString string = ""
+	argsArray := strings.Split(arguments, ";")
+
+	for num, arg := range strings.Split(selectedMethod.Args, ";") {
+		argsSplit := strings.Split(arg, ":")
+		mergedArgsString += fmt.Sprintf("%s:%s:%s", argsArray[num], argsSplit[0], argsSplit[1])
+		if num < len(argsArray)-1 {
+			mergedArgsString += ";"
+		}
+	}
+
 	token := tokenapi.Token{
 		ID:             base64.URLEncoding.EncodeToString([]byte(id)),
 		UserRequested:  x509.Subject.ToRDNSequence().String(),
 		ChaincodeName:  chaincodeName,
 		Method:         method,
-		Arguments:      arguments,
+		Arguments:      mergedArgsString,
 		TimeRequested:  timeRequested,
 		ExpirationTime: expirationTime,
 	}
@@ -210,9 +226,11 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 	params := []string{token.Method, nonce}
 
 	args := strings.Split(token.Arguments, ";")
-	params = append(params, args...)
+	for _, arg := range args {
+		params = append(params, strings.Split(arg, ":")[0])
+	}
 
-	fmt.Printf("Starting computing: %+q\n", params)
+	log.Printf("Starting computing: %s %+q\n", token.Method, params)
 
 	queryArgs := make([][]byte, len(params))
 	for i, arg := range params {
@@ -242,6 +260,8 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("Finished computing: %s %+q\n", token.Method, params)
 
 	return &token, nil
 }

@@ -10,10 +10,11 @@ network/organizations/fabric-ca/org2/*
 network/organizations/ordererOrganizations/*
 network/organizations/peerOrganizations/*
 network/system-genesis-block/*
-backend/network.yaml
+web/backend/network.yaml
 .vscode
 /bin/*
 appUser.id
+*example.com.id
 *~
 *.tar.gz
 log.txt
@@ -38,4 +39,6 @@ vendor/
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+web/sample_files/*.jpeg
 
