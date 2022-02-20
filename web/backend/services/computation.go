@@ -22,11 +22,6 @@ var computations []models.ComputationData
 
 func runTask(Certificate string, PrivateKey string, MspID string, TokenId string) models.TaskResult {
 
-	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
-	if err != nil {
-		log.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
-	}
-
 	log.Printf("Computation %s started\n", TokenId)
 
 	login := models.Login{Certificate: Certificate,

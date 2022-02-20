@@ -36,7 +36,6 @@
     "moment": "^2.29.1",
     "vee-validate": "^4.5.8",
     "vue": "^3.0.0",
-    "vue-auth-href": "^1.4.1",
     "vue-router": "^4.0.12",
     "vue3-datepicker": "^0.3.2",
     "vue3-table-lite": "^1.1.5",

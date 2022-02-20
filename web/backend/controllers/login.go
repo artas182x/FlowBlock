@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
@@ -24,6 +26,7 @@ func Authenticate(c *gin.Context) (*models.User, error) {
 	_, err := services.GetNetwork(loginVals)
 
 	if err != nil {
+		log.Printf(err.Error())
 		return nil, jwt.ErrFailedAuthentication
 	}
 

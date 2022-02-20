@@ -4,19 +4,18 @@ go 1.17
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.7.0
+	github.com/aws/aws-sdk-go v1.43.2
 	github.com/gin-gonic/gin v1.7.4
 	github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/hyperledger/fabric-ca v1.5.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
-	github.com/tjamet/gin-s3 v0.0.0-20180218225456-a0a4740a46a2
 )
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
-	github.com/aws/aws-sdk-go v1.43.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cloudflare/cfssl v1.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

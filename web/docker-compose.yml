@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     networks:
       - hyperledger
-    ports:
-      - 6379:6379
+ #   ports:
+ #     - 6379:6379
 
   minio-server:
     image: minio/minio
@@ -29,8 +29,7 @@ services:
     networks:
       - hyperledger
     volumes:
-      - "${PWD}/network.yaml:/out/network.yaml"
-      - "${PWD}/files/:/files/"
+      - "${PWD}/sample_files/:/files/"
     depends_on:
       - minio-server
     entrypoint: >
@@ -42,25 +41,37 @@ services:
 
   backend:
     restart: unless-stopped
-    build: .
+    build: ./backend
     depends_on:
       - redis
-    ports:
-      - 8000:8000
+      - minio-server
     volumes:
-      - "${PWD}/network.yaml:/out/network.yaml"
+      - "${PWD}/backend/network.yaml:/out/network.yaml"
     networks:
       - hyperledger
+      - web
     environment:
       - REDIS_URL=redis://redis:6379
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
       - MINIO_URL=http://minio-server:9000
       
+  frontend:
+    restart: unless-stopped
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+     - "80:80"
+    networks:
+      - web
+      
 networks:
   hyperledger:
     name: fabric_test
     external: true
+  web:
+    name: web
     
 volumes:
   minio_storage:

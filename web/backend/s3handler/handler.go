@@ -1,3 +1,4 @@
+// Based on: https://github.com/tjamet/gin-s3/
 package s3handler
 
 import (
