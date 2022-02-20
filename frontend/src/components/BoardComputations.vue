@@ -92,7 +92,7 @@ export default {
             field: "timeRequested",
           },
           {
-            label: "Token expiration time",
+            label: "Token expiration",
             field: "expireTime",
           },
           {
@@ -267,6 +267,14 @@ export default {
     if (!this.currentUser) {
       this.$router.push('/login');
     }
+    UserService.refreshToken().then(
+        () => {},
+        (error) => {
+          if (error.response.status === 401) {
+            this.logOut()
+          }
+        }
+    )
     this.doSearchQueue(0, 20)
     this.doSearchTokens(0, 20)
   },
@@ -274,10 +282,18 @@ export default {
 }
 </script>
 
-<style scoped>
-::v-deep(.vtl-table .vtl-thead .vtl-thead-th) {
+<style>
+::v-deep(.vtl-table .vtl-thead .vtl-thead-th)  {
   color: #000000;
   background-color: #e9ecef;
   border-color: #e9ecef;
 }
+
+table {
+  display: table;
+  table-layout: fixed;
+  width: auto;
+  word-break: break-all;
+}
+
 </style>

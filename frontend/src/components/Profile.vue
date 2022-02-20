@@ -29,6 +29,8 @@
 </template>
 
 <script>
+import UserService from "@/services/user.service";
+
 export default {
   name: 'Profile',
   computed: {
@@ -40,6 +42,14 @@ export default {
     if (!this.loginData) {
       this.$router.push('/login');
     }
+    UserService.refreshToken().then(
+        () => {},
+        (error) => {
+          if (error.response.status === 401) {
+            this.logOut()
+          }
+        }
+    )
   }
 };
 </script>

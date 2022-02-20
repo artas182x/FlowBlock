@@ -4,8 +4,9 @@ import Login from "./components/Login.vue";
 
 // lazy-loaded
 const Profile = () => import("./components/Profile.vue")
-const BoardModerator = () => import("./components/BoardComputations.vue")
+const BoardComputations = () => import("./components/BoardComputations.vue")
 const TokenSubmit = () =>  import("@/components/TokenSubmit");
+const BoardMedicalData = () => import("./components/BoardMedicalData.vue")
 
 const routes = [
   {
@@ -31,13 +32,19 @@ const routes = [
     path: "/computations",
     name: "computations",
     // lazy-loaded
-    component: BoardModerator,
+    component: BoardComputations,
   },
   {
     path: "/tokensubmit",
     name: "tokensubmit",
     // lazy-loaded
     component: TokenSubmit,
+  },
+  {
+    path: "/medicaldata",
+    name: "medicaldata",
+    // lazy-loaded
+    component: BoardMedicalData,
   },
 
 ];

@@ -30,6 +30,13 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 	id5, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", ctx.GetStub().GetTxID() + "5"})
 	id6, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US", "SystolicBloodPreasure", ctx.GetStub().GetTxID() + "6"})
 	id7, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "HeartRate", ctx.GetStub().GetTxID() + "7"})
+	id8, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "8"})
+	id9, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "9"})
+	id10, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "10"})
+	id11, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "11"})
+	id12, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "12"})
+	id13, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "13"})
+	id14, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US", "ChestXRay", ctx.GetStub().GetTxID() + "14"})
 
 	entries := []medicaldatastructs.MedicalEntry{
 		{
@@ -87,6 +94,62 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 			MedicalEntryValue: "150",
 			MedicalEntryType:  "int64",
 			DateAdded:         time.Date(2021, time.July, 26, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id8,
+			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "pneumonia.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.December, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id9,
+			PatientID:         "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "normal.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2022, time.January, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id10,
+			PatientID:         "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "pneumonia2.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.November, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id11,
+			PatientID:         "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "normal2.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.August, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id12,
+			PatientID:         "CN=patient4,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "normal3.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.July, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id13,
+			PatientID:         "CN=patient4,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "pneumonia3.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.June, 10, 12, 12, 15, 34, time.UTC),
+		},
+		{
+			ID:                id14,
+			PatientID:         "CN=patient5,OU=client,O=Hyperledger,ST=North Carolina,C=US",
+			MedicalEntryName:  "ChestXRay",
+			MedicalEntryValue: "normal4.jpeg",
+			MedicalEntryType:  "s3img",
+			DateAdded:         time.Date(2021, time.May, 10, 12, 12, 15, 34, time.UTC),
 		},
 	}
 
@@ -307,7 +370,7 @@ func (s *MedicalDataSmartContract) MedicalEntryExists(ctx contractapi.Transactio
 	return medicalEntryJSON != nil, nil
 }
 
-// GetPatientMedicalEntrys returns all medical entries found in world state
+// GetPatientMedicalEntries returns all medical entries found in world state for given patient
 func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, dateStartTimestamp string, dateEndTimestamp string, nonce string) ([]*medicaldatastructs.MedicalEntry, error) {
 
 	compositeKey := []string{KEY_NAME, patientID}
@@ -374,14 +437,14 @@ func (s *MedicalDataSmartContract) GetPatientMedicalEntries(ctx contractapi.Tran
 		}
 
 		if !canRead && !canCompute {
-			return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: user does not have enough read/compute permissions")
+			continue
 		} else if !canRead && canCompute {
 			isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 			if err != nil {
 				return nil, err
 			}
 			if !isNonceValid {
-				return nil, fmt.Errorf("MedicalDataSmartContract:GetPatientMedicalEntries: nonce %s is not valid", nonce)
+				continue
 			}
 		}
 
@@ -433,6 +496,98 @@ func (s *MedicalDataSmartContract) GetAllEntriesAdmin(ctx contractapi.Transactio
 		if err != nil {
 			return nil, err
 		}
+
+		medicalEntries = append(medicalEntries, &medicalEntry)
+	}
+
+	return medicalEntries, nil
+}
+
+// GetPatientMedicalEntries returns all medical entries found in world state
+func (s *MedicalDataSmartContract) GetMedicalEntries(ctx contractapi.TransactionContextInterface, medicalEntryName string, dateStartTimestamp string, dateEndTimestamp string, nonce string) ([]*medicaldatastructs.MedicalEntry, error) {
+
+	compositeKey := []string{KEY_NAME}
+
+	resultsIterator, err := ctx.GetStub().GetStateByPartialCompositeKey(INDEX_NAME, compositeKey)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	i, err := strconv.ParseInt(dateStartTimestamp, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	dateStart := time.Unix(i, 0)
+
+	i, err = strconv.ParseInt(dateEndTimestamp, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	dateEnd := time.Unix(i, 0)
+
+	fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Parsed timestamps. DateStart: %s  DateEnd: %s\n", dateStart.String(), dateEnd.String())
+
+	var medicalEntries []*medicaldatastructs.MedicalEntry
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Deserialize JSON: %s\n", queryResponse.Value)
+
+		var medicalEntry medicaldatastructs.MedicalEntry
+		err = json.Unmarshal(queryResponse.Value, &medicalEntry)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Patient ID: %s\n", medicalEntry.PatientID)
+
+		patientContract := new(patientchaincode.PatientSmartContract)
+
+		canRead, err := patientContract.CanRead(ctx, medicalEntry.PatientID)
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Can read: %t\n", canRead)
+
+		if err != nil {
+			return nil, err
+		}
+
+		canCompute, err := patientContract.CanCompute(ctx, medicalEntry.PatientID)
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Can compute: %t\n", canCompute)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !canRead && !canCompute {
+			continue
+		} else if !canRead && canCompute {
+			isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
+			if err != nil {
+				return nil, err
+			}
+			if !isNonceValid {
+				continue
+			}
+		}
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: MedicalEntryName: %s\n", medicalEntry.MedicalEntryName)
+
+		// check if medical entry name is correct or skip if we are looking for all entries
+		if medicalEntry.MedicalEntryName != medicalEntryName && medicalEntryName != "" {
+			continue
+		}
+
+		// Check if data range is correct
+		if dateStart.After(medicalEntry.DateAdded) || dateEnd.Before(medicalEntry.DateAdded) {
+			continue
+		}
+
+		fmt.Printf("MedicalDataSmartContract:GetMedicalEntries: Appending %s to list\n", medicalEntry.ID)
 
 		medicalEntries = append(medicalEntries, &medicalEntry)
 	}

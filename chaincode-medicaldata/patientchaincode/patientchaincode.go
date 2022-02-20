@@ -22,13 +22,14 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 	id2, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient2,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
 	id3, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient3,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
 	id4, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient4,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
+	id5, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, "CN=patient5,OU=client,O=Hyperledger,ST=North Carolina,C=US"})
 
 	entries := []medicaldatastructs.PatientEntry{
 		{
 			ID:                      id1,
 			OrgReadAllowed:          []string{"org2.example.com"},
 			UsersReadAllowed:        []string{"CN=org1admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
-			OrgComputationAllowed:   []string{"org1.example.com"},
+			OrgComputationAllowed:   []string{"org1.example.com", "org2.example.com"},
 			UsersComputationAllowed: []string{},
 			OrgWriteAllowed:         []string{},
 			UsersWriteAllowed:       []string{},
@@ -37,7 +38,7 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 			ID:                      id2,
 			OrgReadAllowed:          []string{"org2.example.com"},
 			UsersReadAllowed:        []string{"CN=org1admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
-			OrgComputationAllowed:   []string{"org1.example.com"},
+			OrgComputationAllowed:   []string{"org1.example.com", "org2.example.com"},
 			UsersComputationAllowed: []string{},
 			OrgWriteAllowed:         []string{},
 			UsersWriteAllowed:       []string{},
@@ -45,8 +46,8 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 		{
 			ID:                      id3,
 			OrgReadAllowed:          []string{"org2.example.com"},
-			UsersReadAllowed:        []string{"CN=org1admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
-			OrgComputationAllowed:   []string{"org1.example.com"},
+			UsersReadAllowed:        []string{"CN=org2admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
+			OrgComputationAllowed:   []string{"org1.example.com", "org2.example.com"},
 			UsersComputationAllowed: []string{},
 			OrgWriteAllowed:         []string{},
 			UsersWriteAllowed:       []string{},
@@ -55,7 +56,16 @@ func (s *PatientSmartContract) InitLedger(ctx contractapi.TransactionContextInte
 			ID:                      id4,
 			OrgReadAllowed:          []string{"org2.example.com"},
 			UsersReadAllowed:        []string{"CN=org1admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
-			OrgComputationAllowed:   []string{"org1.example.com"},
+			OrgComputationAllowed:   []string{"org1.example.com", "org2.example.com"},
+			UsersComputationAllowed: []string{},
+			OrgWriteAllowed:         []string{},
+			UsersWriteAllowed:       []string{},
+		},
+		{
+			ID:                      id5,
+			OrgReadAllowed:          []string{"org2.example.com"},
+			UsersReadAllowed:        []string{"CN=org2admin,OU=admin,O=Hyperledger,ST=North Carolina,C=US"},
+			OrgComputationAllowed:   []string{"org1.example.com", "org2.example.com"},
 			UsersComputationAllowed: []string{},
 			OrgWriteAllowed:         []string{},
 			UsersWriteAllowed:       []string{},

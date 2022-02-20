@@ -10,8 +10,11 @@ import (
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/controllers"
 	docs "github.com/artas182x/hyperledger-fabric-master-thesis/backend/docs"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/s3handler"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/vars"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -157,8 +160,22 @@ func main() {
 
 	apiV1 := apiGroup.Group("v1")
 
+	minioUrl := ""
+	if minioUrl = os.Getenv("MINIO_URL"); minioUrl == "" {
+		minioUrl = "http://localhost:9000"
+	}
+
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(os.Getenv("MINIO_ROOT_USER"), os.Getenv("MINIO_ROOT_PASSWORD"), ""),
+		Endpoint:         aws.String(minioUrl),
+		Region:           aws.String("us-east-1"),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+
 	// Refresh time can be longer than token timeout
 	apiV1.GET("/refresh_token", authMiddleware.RefreshHandler)
+
 	apiV1.Use(authMiddleware.MiddlewareFunc())
 	{
 		apiV1.GET("/computation/availablemethods/:chaincode_name", controllers.GetAvailableMethods)
@@ -166,7 +183,12 @@ func main() {
 		apiV1.GET("/computation/usertokens", controllers.ReadUserTokens)
 		apiV1.GET("/computation/token/:token_id", controllers.ReadToken)
 		apiV1.POST("/computation/token/:token_id/start", controllers.StartComputation)
+		apiV1.POST("/medicaldata/request", controllers.GetMedicalData)
 		apiV1.GET("/computation/queue", controllers.GetQueue)
+		apiV1.GET("/s3/*any", s3handler.NewDefault(
+			"input-files",
+			s3handler.WithConfig(s3Config),
+		))
 	}
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {

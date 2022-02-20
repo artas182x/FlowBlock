@@ -216,9 +216,55 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1/medicaldata/request": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalData"
+                ],
+                "summary": "GetMedicalData",
+                "parameters": [
+                    {
+                        "description": "Request medical data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.RequestMedicalDataInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "controllers.RequestMedicalDataInput": {
+            "type": "object",
+            "properties": {
+                "dateEndTimestamp": {
+                    "type": "string"
+                },
+                "dateStartTimestamp": {
+                    "type": "string"
+                },
+                "medicalEntryName": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.RequestTokenInput": {
             "type": "object",
             "required": [

@@ -13,7 +13,8 @@ import {
     faCocktail,
     faGlassMartini,
     faBeer,
-    faMicrochip
+    faMicrochip,
+    faDatabase
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -21,11 +22,13 @@ library.add(
     faCocktail,
     faGlassMartini,
     faBeer,
-    faMicrochip
+    faMicrochip,
+    faDatabase
 );
 
+
 createApp(App)
-  .use(router)
-  .use(store)
-  .component("font-awesome-icon", FontAwesomeIcon)
-  .mount("#app");
+    .use(router)
+    .use(store)
+    .component("font-awesome-icon", FontAwesomeIcon)
+    .mount("#app");

@@ -1,4 +1,13 @@
 definitions:
+  controllers.RequestMedicalDataInput:
+    properties:
+      dateEndTimestamp:
+        type: string
+      dateStartTimestamp:
+        type: string
+      medicalEntryName:
+        type: string
+    type: object
   controllers.RequestTokenInput:
     properties:
       arguments:
@@ -146,6 +155,25 @@ paths:
       summary: ReadUserTokens
       tags:
       - Computation
+  /v1/medicaldata/request:
+    post:
+      parameters:
+      - description: Request medical data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.RequestMedicalDataInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      security:
+      - Bearer: []
+      summary: GetMedicalData
+      tags:
+      - MedicalData
 securityDefinitions:
   Bearer:
     in: header

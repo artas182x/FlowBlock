@@ -21,6 +21,11 @@
               <font-awesome-icon icon="microchip" /> Workflows
             </router-link>
           </li>
+          <li v-if="showMedicaldata" class="nav-item">
+            <router-link to="/medicaldata" class="nav-link">
+              <font-awesome-icon icon="database" /> Medical data
+            </router-link>
+          </li>
         </ul>
         <div v-if="!loginData" class="navbar-nav ml-auto">
           <li class="nav-item">
@@ -69,6 +74,9 @@ export default {
       }
 
       return false;
+    },
+    showMedicaldata() {
+      return this.loginData && this.loginData.user.Roles;
     },
 
   },

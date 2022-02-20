@@ -10,11 +10,13 @@ require (
 	github.com/hyperledger/fabric-ca v1.5.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
+	github.com/tjamet/gin-s3 v0.0.0-20180218225456-a0a4740a46a2
 )
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
+	github.com/aws/aws-sdk-go v1.43.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cloudflare/cfssl v1.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -38,6 +40,7 @@ require (
 	github.com/hyperledger/fabric-contract-api-go v1.1.0 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/clock v0.0.0-20160418191101-880ee4c33548 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
@@ -105,13 +108,14 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/swaggo/swag v1.7.4
 	github.com/urfave/cli/v2 v2.3.0 // indirect
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.7 // indirect
 )
 
 require (
 	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-computationtoken v0.0.0-20211114182734-72fe77be98fe
+	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata v0.0.0-20220211090411-deb3100507c2
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
