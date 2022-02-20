@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("Failed to create wallet: %v", err)
 	}
 
-	userList := []string{"Admin@org1.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "doctor3@org1.example.com", "patient1@org1.example.com",
+	userList := []string{"Admin@org1.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "university1@org1.example.com", "patient1@org1.example.com",
 		"patient2@org1.example.com", "patient3@org1.example.com", "Admin@org2.example.com", "doctor11@org2.example.com", "patient11@org2.example.com"}
 
 	for _, user := range userList {

@@ -57,7 +57,7 @@ function createOrg1() {
 
   infoln "Registering doctor 3"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name doctor3 --id.secret 123 --id.type client --id.attrs ReadOthersData=1:ecert --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name university1 --id.secret 123 --id.type client --id.attrs RequestTokenRole=1:ecert --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering the org admin"
@@ -102,7 +102,7 @@ function createOrg1() {
   { set +x; } 2>/dev/null
     fabric-ca-client enroll -u https://doctor2:123@localhost:7054 --caname ca-org1 -M "${PWD}/organizations/peerOrganizations/org1.example.com/users/doctor2@org1.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
-    fabric-ca-client enroll -u https://doctor3:123@localhost:7054 --caname ca-org1 -M "${PWD}/organizations/peerOrganizations/org1.example.com/users/doctor3@org1.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+    fabric-ca-client enroll -u https://university1:123@localhost:7054 --caname ca-org1 -M "${PWD}/organizations/peerOrganizations/org1.example.com/users/university1@org1.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/patient1@org1.example.com/msp/config.yaml"
@@ -110,7 +110,7 @@ function createOrg1() {
   cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/patient3@org1.example.com/msp/config.yaml"
   cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/doctor1@org1.example.com/msp/config.yaml"
   cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/doctor2@org1.example.com/msp/config.yaml"
-  cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/doctor3@org1.example.com/msp/config.yaml"
+  cp "${PWD}/organizations/peerOrganizations/org1.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org1.example.com/users/university1@org1.example.com/msp/config.yaml"
 
   infoln "Generating the org admin msp"
   set -x

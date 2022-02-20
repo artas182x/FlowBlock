@@ -154,6 +154,7 @@ export default {
               this.tableMedicalData.isLoading = false;
             },
             (error) => {
+              this.tableMedicalData.isLoading = false;
               if (error.response.status === 401) {
                 this.logOut()
               }
