@@ -15,13 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-computationtoken/tokenapi"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
 	tf "github.com/galeone/tensorflow/tensorflow/go"
 	tg "github.com/galeone/tfgo"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -132,47 +127,6 @@ func unzip(src, dest string) error {
 	return nil
 }
 
-func downloadFromS3(fileName string, baseDir string) error {
-
-	fmt.Printf("Downloading: %+q\n", fileName)
-
-	// Configure to use MinIO Server
-	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
-		Endpoint:         aws.String("http://minio-server:9000"),
-		Region:           aws.String("us-east-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
-	}
-	newSession, _ := session.NewSession(s3Config)
-
-	os.MkdirAll(baseDir, 0755)
-
-	file, err := os.Create(baseDir + fileName)
-	if err != nil {
-		fmt.Println("Failed to create file", err)
-		return err
-	}
-	defer file.Close()
-
-	bucket := aws.String("input-files")
-	key := aws.String(fileName)
-
-	downloader := s3manager.NewDownloader(newSession)
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: bucket,
-			Key:    key,
-		})
-	if err != nil {
-		fmt.Println("Failed to download file", err)
-		return err
-	}
-	fmt.Println("Downloaded file", file.Name(), numBytes, "bytes")
-
-	return nil
-}
-
 func imageToTensor(img image.Image) (*tf.Tensor, error) {
 	var image [1][150][150][3]float32
 	for i := 0; i < 150; i++ {
@@ -202,7 +156,8 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 
 func downloadPneumoniaModel(baseDir string) error {
 	modelFilename := "pneumonia_model.zip"
-	err := downloadFromS3(modelFilename, baseDir)
+	modelChecksum := "64c779ec892aab4c70bc7a81d8c072c0c7c0c2e78d52a112ec43f9c7f99c6d85"
+	err := tokenapi.DownloadFromS3(modelFilename, modelChecksum, baseDir)
 	if err != nil {
 		return err
 	}
@@ -213,8 +168,8 @@ func downloadPneumoniaModel(baseDir string) error {
 	return nil
 }
 
-func classifyPneumonia(imageFilename string, baseDir string) (float32, error) {
-	err := downloadFromS3(imageFilename, baseDir)
+func classifyPneumonia(imageFilename string, checksum string, baseDir string) (float32, error) {
+	err := tokenapi.DownloadFromS3(imageFilename, checksum, baseDir)
 	if err != nil {
 		return 0.0, err
 	}
@@ -287,6 +242,11 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 		return &ret, nil
 	}
 
+	if medicalEntry.medicalEntryType != "s3img" {
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: medical entry is not an image"), RetType: "string"}
+		return &ret, nil
+	}
+
 	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTRORY, rand.Intn(100000))
 
 	fmt.Printf("Cleanup: %+q\n", baseDir)
@@ -299,8 +259,12 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 		return &ret, nil
 	}
 
-	fmt.Printf("Classifying: %+q\n", medicalEntry.MedicalEntryValue)
-	result, err := classifyPneumonia(medicalEntry.MedicalEntryValue, baseDir)
+	medicalEntryVals := strings.Split(medicalEntry.MedicalEntryValue, "?")
+	fileName := medicalEntryVals[0]
+	checksum := medicalEntryVals[1]
+
+	fmt.Printf("Classifying: %+q\n", fileName)
+	result, err := classifyPneumonia(fileName, checksum, baseDir)
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 		return &ret, nil
@@ -356,8 +320,11 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 	cases := 0
 
 	for _, arg := range medicalEntries {
-		fmt.Printf("Classifying: %+q\n", arg.MedicalEntryValue)
-		result, err := classifyPneumonia(arg.MedicalEntryValue, baseDir)
+		medicalEntryVals := strings.Split(arg.MedicalEntryValue, "?")
+		fileName := medicalEntryVals[0]
+		checksum := medicalEntryVals[1]
+		fmt.Printf("Classifying: %+q\n", fileName)
+		result, err := classifyPneumonia(arg.MedicalEntryValue, checksum, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 			return &ret, nil

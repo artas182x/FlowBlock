@@ -1,12 +1,24 @@
 package tokenapi
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
+
+// In debug mode for example file checksums are skipped, because example data contains invalid ones
+const DEBUG_MODE = true
 
 type Method struct {
 	Name        string `json:"name"`
@@ -46,4 +58,75 @@ func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) 
 
 	fmt.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
 	return creator == nonceStr, nil
+}
+
+// Downloads file from S3 to given directory
+func DownloadFromS3(fileName string, sha256sum string, baseDir string) error {
+
+	fmt.Printf("Downloading: %+q\n", fileName)
+
+	// Configure to use MinIO Server
+	s3Config := &aws.Config{
+		// TODO: Change auth
+		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
+		Endpoint:         aws.String("http://minio-server:9000"),
+		Region:           aws.String("us-east-1"),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	newSession, _ := session.NewSession(s3Config)
+
+	os.MkdirAll(baseDir, 0755)
+
+	file, err := os.Create(baseDir + fileName)
+	if err != nil {
+		fmt.Println("Failed to create file", err)
+		return err
+	}
+	defer file.Close()
+
+	bucket := aws.String("input-files")
+	key := aws.String(fileName)
+
+	downloader := s3manager.NewDownloader(newSession)
+	numBytes, err := downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: bucket,
+			Key:    key,
+		})
+	if err != nil {
+		fmt.Println("Failed to download file", err)
+		return err
+	}
+
+	sha256sumCalculated, err := calculateSha256(baseDir + fileName)
+
+	if err != nil {
+		fmt.Println("Failed to calculate checksum", err)
+		return err
+	}
+
+	if sha256sum != sha256sumCalculated {
+		if !DEBUG_MODE {
+			return fmt.Errorf("security error: Invalid checksum")
+		}
+	}
+
+	fmt.Println("Downloaded file", file.Name(), numBytes, "bytes")
+
+	return nil
+}
+
+func calculateSha256(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

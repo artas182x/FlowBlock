@@ -1,12 +1,14 @@
 package medicaldatachaincode
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/patientchaincode"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/patientchaincode"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -103,6 +105,11 @@ func genBloodPreasure(ctx contractapi.TransactionContextInterface) []medicaldata
 	return entries
 }
 
+func GetSHA256Hash(text string) string {
+	hash := sha256.Sum256([]byte(text))
+	return hex.EncodeToString(hash[:])
+}
+
 func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastructs.MedicalEntry {
 
 	entries := []medicaldatastructs.MedicalEntry{}
@@ -113,11 +120,13 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
 		global_id_counter += 1
 
+		fileName := fmt.Sprintf("normal%d.jpeg", i)
+
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
 			PatientID:         fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId),
 			MedicalEntryName:  "ChestXRay",
-			MedicalEntryValue: fmt.Sprintf("normal%d.jpeg", i),
+			MedicalEntryValue: fmt.Sprintf("%s?%s", fileName, GetSHA256Hash(fileName)),
 			MedicalEntryType:  "s3img",
 			DateAdded:         randDate(i),
 		}
@@ -131,11 +140,13 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
 		global_id_counter += 1
 
+		fileName := fmt.Sprintf("pneumonia%d.jpeg", i)
+
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
 			PatientID:         fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId),
 			MedicalEntryName:  "ChestXRay",
-			MedicalEntryValue: fmt.Sprintf("pneumonia%d.jpeg", i),
+			MedicalEntryValue: fmt.Sprintf("%s?%s", fileName, GetSHA256Hash(fileName)),
 			MedicalEntryType:  "s3img",
 			DateAdded:         randDate(i),
 		}

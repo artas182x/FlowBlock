@@ -43,6 +43,11 @@ func GetMedicalData(c *gin.Context) {
 		return
 	}
 
+	if len(out) == 0 {
+		c.JSON(204, "")
+		return
+	}
+
 	var medicaldata []medicaldatastructs.MedicalEntry
 	err = json.Unmarshal(out, &medicaldata)
 	if err != nil {

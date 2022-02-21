@@ -265,6 +265,10 @@ export default {
 
                   if (argType === "ts") {
                      argVal = moment(new Date(parseInt(argVal))).format('MMMM Do YYYY, h:mm:ss a')
+                  } else if (argType === "s3img") {
+                    const fileName = argVal.split("?")[0]
+                    const fileSum = argVal.split("?")[1]
+                    argVal = fileName + " (" + fileSum.substr(7) + "...)"
                   }
 
                   args.push(argName + ": " + argVal)
