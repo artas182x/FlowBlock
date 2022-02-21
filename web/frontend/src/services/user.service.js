@@ -28,6 +28,9 @@ class UserService {
     return axios.post(config.BASE_API_URL + 'v1/medicaldata/request', input, {
       headers: authHeader(),
       transformResponse: (res) => {
+        if (!res) {
+          return JSON.parse("[]")
+        }
         res = res.replace('/\\0000/g', '')
         return JSON.parse(res)
           },

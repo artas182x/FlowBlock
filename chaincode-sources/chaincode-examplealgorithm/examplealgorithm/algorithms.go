@@ -242,7 +242,7 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 		return &ret, nil
 	}
 
-	if medicalEntry.medicalEntryType != "s3img" {
+	if medicalEntry.MedicalEntryType != "s3img" {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: medical entry is not an image"), RetType: "string"}
 		return &ret, nil
 	}
@@ -324,7 +324,7 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 		fileName := medicalEntryVals[0]
 		checksum := medicalEntryVals[1]
 		fmt.Printf("Classifying: %+q\n", fileName)
-		result, err := classifyPneumonia(arg.MedicalEntryValue, checksum, baseDir)
+		result, err := classifyPneumonia(fileName, checksum, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 			return &ret, nil
