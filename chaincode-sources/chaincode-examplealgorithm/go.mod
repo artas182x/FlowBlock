@@ -3,6 +3,8 @@ module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/c
 go 1.14
 
 require (
+	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220221202550-e2f1db7505cb
+	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata v0.0.0-20220221202550-e2f1db7505cb
 	github.com/galeone/tensorflow/tensorflow/go v0.0.0-20210519172502-4018d721b591
 	github.com/galeone/tfgo v0.0.0-20210914072119-caabdf830ee3
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200424173110-d7076418f212

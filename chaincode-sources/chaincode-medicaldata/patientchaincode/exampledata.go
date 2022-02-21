@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
