@@ -46,7 +46,7 @@ services:
       - redis
       - minio-server
     volumes:
-      - "${PWD}/backend/network.yaml:/out/network.yaml"
+      - "${PWD}/network.yaml:/out/network.yaml"
     networks:
       - hyperledger
       - web

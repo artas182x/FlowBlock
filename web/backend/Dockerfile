@@ -3,4 +3,5 @@ WORKDIR /src
 COPY . .
 RUN go build -o /out/backend .
 ENV GIN_MODE=release
+WORKDIR /out
 CMD ["/out/backend"]
