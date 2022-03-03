@@ -19,6 +19,7 @@ ORDERER_CA=${DIR}/network/organizations/ordererOrganizations/example.com/orderer
 PEER0_ORG1_CA=${DIR}/network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
 PEER0_ORG2_CA=${DIR}/network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
 PEER0_ORG3_CA=${DIR}/network/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
+PEER0_ORG4_CA=${DIR}/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt
 
 
 if [[ ${ORG,,} == "org1" || ${ORG,,} == "digibank" ]]; then
@@ -34,7 +35,18 @@ elif [[ ${ORG,,} == "org2" || ${ORG,,} == "magnetocorp" ]]; then
    CORE_PEER_MSPCONFIGPATH=${DIR}/network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
    CORE_PEER_ADDRESS=localhost:9051
    CORE_PEER_TLS_ROOTCERT_FILE=${DIR}/network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+elif [[ ${ORG,,} == "org3" ]]; then
 
+   CORE_PEER_LOCALMSPID=Org3MSP
+   CORE_PEER_MSPCONFIGPATH=${DIR}/network/organizations/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp
+   CORE_PEER_ADDRESS=localhost:11051
+   CORE_PEER_TLS_ROOTCERT_FILE=${DIR}/network/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
+elif [[ ${ORG,,} == "org4" ]]; then
+
+   CORE_PEER_LOCALMSPID=Org4MSP
+   CORE_PEER_MSPCONFIGPATH=${DIR}/network/organizations/peerOrganizations/org4.example.com/users/Admin@org4.example.com/msp
+   CORE_PEER_ADDRESS=localhost:12051
+   CORE_PEER_TLS_ROOTCERT_FILE=${DIR}/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt
 else
    echo "Unknown \"$ORG\", please choose Org1/Digibank or Org2/Magnetocorp"
    echo "For example to get the environment variables to set upa Org2 shell environment run:  ./setOrgEnv.sh Org2"
@@ -51,6 +63,7 @@ echo "ORDERER_CA=${ORDERER_CA}"
 echo "PEER0_ORG1_CA=${PEER0_ORG1_CA}"
 echo "PEER0_ORG2_CA=${PEER0_ORG2_CA}"
 echo "PEER0_ORG3_CA=${PEER0_ORG3_CA}"
+echo "PEER0_ORG4_CA=${PEER0_ORG4_CA}"
 
 echo "CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}"
 echo "CORE_PEER_ADDRESS=${CORE_PEER_ADDRESS}"
