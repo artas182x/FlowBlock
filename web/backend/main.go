@@ -25,6 +25,7 @@ import (
 // @in header
 // @name Authorization
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	port := os.Getenv("PORT")
 	r := gin.Default()
 	r.Use(gin.Logger())
