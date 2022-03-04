@@ -5,6 +5,7 @@ network/ledgers-backup
 network/channel-artifacts/*.json
 network/org3-artifacts/crypto-config/*
 network/organizations/fabric-ca/ordererOrg/*
+network/organizations/fabric-ca/ordererOrg2/*
 network/organizations/fabric-ca/org1/*
 network/organizations/fabric-ca/org2/*
 network/organizations/fabric-ca/org3/*
