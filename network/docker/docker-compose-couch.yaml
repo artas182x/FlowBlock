@@ -15,6 +15,11 @@ services:
     image: couchdb:3.1.1
     labels:
       service: hyperledger-fabric
+      com.docker-tc.enabled: 1
+      com.docker-tc.limit: 100mbps
+      com.docker-tc.delay: 800ms
+      com.docker-tc.loss: 1%
+      com.docker-tc.corrupt: 1%
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
@@ -44,6 +49,11 @@ services:
     image: couchdb:3.1.1
     labels:
       service: hyperledger-fabric
+      com.docker-tc.enabled: 1
+      com.docker-tc.limit: 100mbps
+      com.docker-tc.delay: 800ms
+      com.docker-tc.loss: 1%
+      com.docker-tc.corrupt: 1%
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
