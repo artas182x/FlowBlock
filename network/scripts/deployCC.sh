@@ -293,6 +293,8 @@ infoln "Install chaincode on peer0.org2..."
 installChaincode 2
 infoln "Install chaincode on peer0.org3..."
 installChaincode 3
+infoln "Install chaincode on peer0.org4..."
+installChaincode 4
 
 ## query whether the chaincode is installed
 queryInstalled 1
@@ -312,14 +314,20 @@ queryInstalled 3
 ## now approve also for org3
 approveForMyOrg 3
 
-commitChaincodeDefinition 1 2 3
+## query whether the chaincode is installed
+queryInstalled 4
+
+## now approve also for org4
+approveForMyOrg 4
+
+commitChaincodeDefinition 1 2 3 4
 
 ## Invoke the chaincode - this does require that the chaincode have the 'initLedger'
 ## method defined
 if [ "$CC_INIT_FCN" = "NA" ]; then
   infoln "Chaincode initialization is not required"
 else
-  chaincodeInvokeInit 1 2 3
+  chaincodeInvokeInit 1 2 3 4
 fi
 
 exit 0
