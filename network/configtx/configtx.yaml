@@ -283,6 +283,7 @@ Orderer: &OrdererDefaults
     # to include the OrdererEndpoints item in your org definition
     Addresses:
         - orderer.example.com:7050
+        - orderer2.example.com:7150
         - orderer.example2.com:27050
 
     EtcdRaft:
@@ -291,6 +292,10 @@ Orderer: &OrdererDefaults
           Port: 7050
           ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
           ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+        - Host: orderer2.example.com
+          Port: 7150
+          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
         - Host: orderer.example2.com
           Port: 27050
           ClientTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt

@@ -23,8 +23,10 @@ export PEER1_ORG3_CA=${PWD}/organizations/peerOrganizations/org3.example.com/pee
 export PEER1_ORG4_CA=${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer1.org4.example.com/tls/ca.crt
 export ORDERER_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
 export ORDERER_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key
-export ORDERER2_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt
-export ORDERER2_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.key
+export ORDERER2_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+export ORDERER2_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.key
+export ORDEREREXAMPLE2_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt
+export ORDEREREXAMPLE2_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.key
 
 # Set environment variables for the peer org
 setGlobals() {
