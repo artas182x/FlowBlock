@@ -133,6 +133,19 @@ installChaincode() {
   successln "Chaincode is installed on peer0.org${ORG}"
 }
 
+# installChaincode PEER1 ORG
+installChaincodePeer1() {
+  ORG=$1
+  setGlobalsPeer1 $ORG
+  set -x
+  peer lifecycle chaincode install ${CC_NAME}.tar.gz >&log.txt
+  res=$?
+  { set +x; } 2>/dev/null
+  cat log.txt
+  verifyResult $res "Chaincode installation on peer1.org${ORG} has failed"
+  successln "Chaincode is installed on peer1.org${ORG}"
+}
+
 # queryInstalled PEER ORG
 queryInstalled() {
   ORG=$1
@@ -145,6 +158,20 @@ queryInstalled() {
   PACKAGE_ID=$(sed -n "/${CC_NAME}_${CC_VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
   verifyResult $res "Query installed on peer0.org${ORG} has failed"
   successln "Query installed successful on peer0.org${ORG} on channel"
+}
+
+# queryInstalled PEER ORG
+queryInstalledPeer1() {
+  ORG=$1
+  setGlobalsPeer1 $ORG
+  set -x
+  peer lifecycle chaincode queryinstalled >&log.txt
+  res=$?
+  { set +x; } 2>/dev/null
+  cat log.txt
+  PACKAGE_ID=$(sed -n "/${CC_NAME}_${CC_VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
+  verifyResult $res "Query installed on peer1.org${ORG} has failed"
+  successln "Query installed successful on peer1.org${ORG} on channel"
 }
 
 # approveForMyOrg VERSION PEER ORG
@@ -257,6 +284,25 @@ chaincodeInvokeInit() {
   successln "Invoke transaction successful on $PEERS on channel '$CHANNEL_NAME'"
 }
 
+chaincodeInvokeInitPeer1() {
+  parsePeer1ConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  set -x
+  fcn_call='{"function":"'${CC_INIT_FCN}'","Args":[]}'
+  infoln "invoke fcn call:${fcn_call}"
+  peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "$ORDERER_CA" -C $CHANNEL_NAME -n ${CC_NAME} "${PEER_CONN_PARMS[@]}" --isInit -c ${fcn_call} >&log.txt
+  res=$?
+  { set +x; } 2>/dev/null
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  successln "Invoke transaction successful on $PEERS on channel '$CHANNEL_NAME'"
+}
+
 chaincodeQuery() {
   ORG=$1
   setGlobals $ORG
@@ -296,26 +342,39 @@ installChaincode 3
 infoln "Install chaincode on peer0.org4..."
 installChaincode 4
 
+infoln "Installing chaincode on peer1.org1..."
+installChaincodePeer1 1
+infoln "Install chaincode on peer1.org2..."
+installChaincodePeer1 2
+infoln "Install chaincode on peer1.org3..."
+installChaincodePeer1 3
+infoln "Install chaincode on peer1.org4..."
+installChaincodePeer1 4
+
 ## query whether the chaincode is installed
 queryInstalled 1
+queryInstalledPeer1 1
 
 ## approve the definition for org1
 approveForMyOrg 1
 
 ## query whether the chaincode is installed
 queryInstalled 2
+queryInstalledPeer1 2
 
 ## now approve also for org2
 approveForMyOrg 2
 
 ## query whether the chaincode is installed
 queryInstalled 3
+queryInstalledPeer1 3
 
 ## now approve also for org3
 approveForMyOrg 3
 
 ## query whether the chaincode is installed
 queryInstalled 4
+queryInstalledPeer1 3
 
 ## now approve also for org4
 approveForMyOrg 4
@@ -328,6 +387,7 @@ if [ "$CC_INIT_FCN" = "NA" ]; then
   infoln "Chaincode initialization is not required"
 else
   chaincodeInvokeInit 1 2 3 4
+  chaincodeInvokeInitPeer1 1 2 3 4
 fi
 
 exit 0
