@@ -43,6 +43,8 @@ Create network (run from manager node)
 
 1. Go to network directory
 2. Run ./restart.sh command (run from manager node)
+3. Go to web
+4. Type: docker stack deploy -c docker-compose.yml test
 
 # Stop network and cleanup
 
