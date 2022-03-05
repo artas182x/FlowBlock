@@ -20,9 +20,13 @@ services:
     networks:
       - hyperledger
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
     command: server --console-address :9001 /data
+    networks:
+      hyperledger:
+        aliases:
+          - minio-server
 
   minio-client:
     image: minio/mc
@@ -34,13 +38,14 @@ services:
       - minio-server
     entrypoint: >
      /bin/sh -c "sleep 5 &&
-     /usr/bin/mc config host add myminio http://minio-server:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+     /usr/bin/mc config host add myminio http://minio-server:9000 admin adminadmin;
      /usr/bin/mc mb myminio/input-files;
      /usr/bin/mc cp /files/* myminio/input-files
      "
 
   backend:
     restart: unless-stopped
+    image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.1
     build: ./backend
     depends_on:
       - redis
@@ -49,29 +54,31 @@ services:
       - "${PWD}/network.yaml:/out/network.yaml"
     networks:
       - hyperledger
-      - web
     environment:
       - REDIS_URL=redis://redis:6379
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
       - MINIO_URL=http://minio-server:9000
+    networks:
+      hyperledger:
+        aliases:
+          - backend
       
   frontend:
     restart: unless-stopped
+    image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.1
     build: ./frontend
     depends_on:
       - backend
     ports:
      - "80:80"
     networks:
-      - web
+      - hyperledger
       
 networks:
   hyperledger:
-    name: fabric_test
-    external: true
-  web:
-    name: web
+    external:
+      name: fabric_test
     
 volumes:
   minio_storage:

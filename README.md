@@ -7,6 +7,17 @@ vagrantFixDns.sh - used by Vagrant where to set DNS to DHCP
 
 If you are using swarm to deploy it on more than one node, you need to use NFS or Samba to share this directory on all nodes in the same location. if you use Vagrant it is done for you (directory is mounted to /hyperledger)
 
+You need to be able to clone Github repositories over SSH (setup keys) - only manager node
+
+You need to redirect HTTPS request to SSH. You need to put these lines in ~/.gitconfig - only manager node
+
+    [url "git@github.com:"]
+    insteadOf = https://github.com/
+
+Add github.com to known_hosts if you didn't have chance before - only manager node
+
+    ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
 # Example Docker swarm cluster creation commands:
 
 Create swarm (replace eth0 with your network adapter id)

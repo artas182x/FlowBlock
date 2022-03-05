@@ -35,6 +35,10 @@ services:
     container_name: ca_org1
     networks:
       - test
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org1
 
   ca_org2:
     image: hyperledger/fabric-ca:latest
@@ -60,6 +64,10 @@ services:
     container_name: ca_org2
     networks:
       - test
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org2
 
   ca_orderer:
     image: hyperledger/fabric-ca:latest
