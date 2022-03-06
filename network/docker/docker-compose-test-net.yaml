@@ -26,7 +26,7 @@ networks:
 services:
 
   ordererexamplecom:
-    container_name: orderer.example.com
+    container_name: ordererexamplecom
     image: hyperledger/fabric-orderer:latest
     labels:
       service: hyperledger-fabric
@@ -118,7 +118,7 @@ services:
       - 7150:7150
       - 7153:7153
       - 17250:17250
-     networks:
+    networks:
       test:
         aliases:
           - orderer2.example.com
