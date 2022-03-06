@@ -119,6 +119,10 @@ services:
     container_name: ca_org4
     networks:
       - test
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org4
 
 
   ca_orderer:
