@@ -2,6 +2,8 @@ package s3handler
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -14,10 +16,19 @@ import (
 )
 
 func checkExistingBucket(c *s3.S3, bucket string) error {
-	output, err := c.ListBuckets(&s3.ListBucketsInput{})
-	if err != nil {
-		panic(err)
+
+	var output *s3.ListBucketsOutput
+	var err error
+	for {
+		output, err = c.ListBuckets(&s3.ListBucketsInput{})
+
+		if err == nil {
+			break
+		}
+		log.Printf("failed to find bucket. Retrying in 10 sec... %s\n", err)
+		time.Sleep(time.Second * 10)
 	}
+
 	for _, b := range output.Buckets {
 		if bucket == *b.Name {
 			return nil
