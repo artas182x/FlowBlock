@@ -155,6 +155,8 @@ services:
       placement:
         constraints:
           - node.labels.org == org3
+    environment:
+      - MINIO_URL=http://minio3:9000
 
   minio3:
     <<: *minio-common
