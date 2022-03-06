@@ -164,7 +164,6 @@ function createOrgs() {
     if [ $res -ne 0 ]; then
       fatalln "Failed to generate certificates..."
     fi
-<<<<<<< HEAD
 
     infoln "Creating Org4 Identities"
 
@@ -175,8 +174,6 @@ function createOrgs() {
     if [ $res -ne 0 ]; then
       fatalln "Failed to generate certificates..."
     fi
-=======
->>>>>>> f930b2b891564a4a46dd5a30487b85b1f2c457c5
 
     infoln "Creating Orderer Org Identities"
 
@@ -217,13 +214,10 @@ function createOrgs() {
     infoln "Creating Org3 Identities"
 
     createOrg3
-<<<<<<< HEAD
 
     infoln "Creating Org4 Identities"
 
     createOrg4
-=======
->>>>>>> f930b2b891564a4a46dd5a30487b85b1f2c457c5
 
     infoln "Creating Orderer Org Identities"
 

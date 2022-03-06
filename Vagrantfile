@@ -13,7 +13,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision :shell, path: "./helperScripts/provisionMachines.sh"
 
 	# Iterating the loop for three times
-	(1..3).each do |i|
+	(1..4).each do |i|
 		# Defining VM properties
 		config.vm.define "swarmnode#{i}" do |node|
 			node.vm.hostname = "swarmnode#{i}"

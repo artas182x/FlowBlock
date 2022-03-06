@@ -10,10 +10,7 @@ volumes:
   peer0.org1.example.com:
   peer0.org2.example.com:
   peer0.org3.example.com:
-<<<<<<< HEAD
   peer0.org4.example.com:
-=======
->>>>>>> f930b2b891564a4a46dd5a30487b85b1f2c457c5
 
 networks:
   test:
@@ -231,8 +228,8 @@ services:
         constraints:
           - node.labels.org == org3
 
-  peer0.org4.example.com:
-    container_name: peer0.org4.example.com
+  peer0org4examplecom:
+    container_name: peer0org4examplecom
     image: hyperledger/fabric-peer:latest
     labels:
       service: hyperledger-fabric
@@ -274,7 +271,13 @@ services:
     ports:
       - 12051:12051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org4.example.com
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org4
 
   cli:
     container_name: cli
