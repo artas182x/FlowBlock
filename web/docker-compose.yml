@@ -1,5 +1,17 @@
 version: "3.8"
 
+x-frontend-common: &backend-common
+  restart: unless-stopped
+  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.2
+  build: ./frontend
+  networks:
+    - hyperledger
+  ports:
+    - target: 80
+      published: 80
+      protocol: tcp
+      mode: host
+
 x-backend-common: &backend-common
   restart: unless-stopped
   image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.2
@@ -81,20 +93,15 @@ services:
       - data1-2:/data2
 
   frontend1:
-    restart: unless-stopped
-    image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.2
-    build: ./frontend
+    <<: *frontend-common
     depends_on:
       - backend1
     environment:
       - BACKEND_HOST=backend1
-    ports:
-      - target: 80
-        published: 80
-        protocol: tcp
-        mode: host
-    networks:
-      - hyperledger
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org1
 
   backend1:
     <<: *backend-common
@@ -107,20 +114,15 @@ services:
           - node.labels.org == org1
 
   frontend2:
-    restart: unless-stopped
-    image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.2
-    build: ./frontend
+    <<: *frontend-common
     depends_on:
       - backend2
     environment:
       - BACKEND_HOST=backend2
-    ports:
-      - target: 80
-        published: 80
-        protocol: tcp
-        mode: host
-    networks:
-      - hyperledger
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org2
 
   backend2:
     <<: *backend-common
