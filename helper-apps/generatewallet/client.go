@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("Failed to create wallet: %v", err)
 	}
 
-	userList := []string{"Admin@org1.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "university1@org1.example.com", "patient1@org1.example.com",
+	userList := []string{"Admin@org1.example.com", "Admin@org3.example.com", "Admin@org4.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "university1@org1.example.com", "patient1@org1.example.com",
 		"patient2@org1.example.com", "patient3@org1.example.com", "Admin@org2.example.com", "doctor11@org2.example.com", "patient11@org2.example.com"}
 
 	for _, user := range userList {
@@ -33,6 +33,7 @@ func main() {
 func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 	log.Printf("============ Populating wallet for user %s ============", userOrg)
 	org := strings.Split(userOrg, "@")[1]
+	orgNum := getStringInBetween(org, "org", ".example.com")
 	credPath := filepath.Join(
 		"/app",
 		"peerOrganizations",
@@ -46,7 +47,8 @@ func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 	// read the certificate pem
 	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
 	if err != nil {
-		return err
+		log.Println("Certificate not found. Skipping")
+		return nil
 	}
 
 	keyDir := filepath.Join(credPath, "keystore")
@@ -64,7 +66,23 @@ func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 		return err
 	}
 
-	identity := gateway.NewX509Identity("Org1MSP", string(cert), string(key))
+	orgMSP := "Org" + orgNum + "MSP"
+
+	identity := gateway.NewX509Identity(orgMSP, string(cert), string(key))
 
 	return wallet.Put(userOrg, identity)
+}
+
+func getStringInBetween(str string, start string, end string) (result string) {
+	s := strings.Index(str, start)
+	if s == -1 {
+		return
+	}
+	s += len(start)
+	e := strings.Index(str[s:], end)
+	if e == -1 {
+		return
+	}
+	e += s + e - 1
+	return str[s:e]
 }

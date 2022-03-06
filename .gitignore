@@ -12,7 +12,7 @@ network/organizations/fabric-ca/org4/*
 network/organizations/ordererOrganizations/*
 network/organizations/peerOrganizations/*
 network/system-genesis-block/*
-web/network.yaml
+web/network*
 .vscode
 /bin/*
 appUser.id
