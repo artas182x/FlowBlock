@@ -21,11 +21,6 @@ x-backend-common: &backend-common
     - minio1
   networks:
     - hyperledger
-  environment:
-    - REDIS_URL=redis://redis:6379
-    - MINIO_ROOT_USER=admin
-    - MINIO_ROOT_PASSWORD=adminadmin
-    - WORKERS_NUM=1
 
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2022-03-05T06-32-39Z
@@ -100,6 +95,10 @@ services:
           - node.labels.org == org1
     environment:
       - MINIO_URL=http://minio1:9000
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
+      - WORKERS_NUM=1
 
   frontend2:
     <<: *frontend-common
@@ -123,7 +122,11 @@ services:
           - node.labels.org == org2
     environment:
       - MINIO_URL=http://minio2:9000
-
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
+      - WORKERS_NUM=1
+      
   minio2:
     <<: *minio-common
     hostname: minio1
@@ -157,6 +160,11 @@ services:
           - node.labels.org == org3
     environment:
       - MINIO_URL=http://minio3:9000
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
+      - WORKERS_NUM=1
+
 
   minio3:
     <<: *minio-common
