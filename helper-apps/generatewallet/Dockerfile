@@ -3,7 +3,6 @@ WORKDIR /src
 COPY . .
 RUN go build -o /app/generateWallet .
 
-FROM gcr.io/distroless/base-debian10
+FROM debian:stretch-slim
 WORKDIR /app
 COPY --from=build /app/generateWallet /app/generateWallet
-ENTRYPOINT ["/app/generateWallet"]
