@@ -25,7 +25,6 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	port := os.Getenv("PORT")
 	r := gin.Default()
 	r.Use(gin.Logger())
@@ -191,6 +190,8 @@ func main() {
 			s3handler.WithConfig(s3Config),
 		))
 	}
+
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
