@@ -84,7 +84,7 @@ In this repository there is a Vagrant demo included. You can use it to setup loc
 
 In helper-apps you will find two application that may be useful:
 
-1. generatewallet - it will generate example wallets for Org1 and Org2 users to use later in web application. The easiest way to launch it is using docker-compose
+1. generatewallet - it will generate example wallets for Org1-Org4 users to use later in web application. The easiest way to launch it is using docker-compose
 2. sampleclient - simple Blockchain client. You can use it to debug your smart contracts.
 
 # Stop network and cleanup

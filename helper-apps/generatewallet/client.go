@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("Failed to create wallet: %v", err)
 	}
 
-	userList := []string{"Admin@org1.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "university1@org1.example.com", "patient1@org1.example.com",
+	userList := []string{"Admin@org1.example.com", "Admin@org3.example.com", "Admin@org4.example.com", "doctor1@org1.example.com", "doctor2@org1.example.com", "university1@org1.example.com", "patient1@org1.example.com",
 		"patient2@org1.example.com", "patient3@org1.example.com", "Admin@org2.example.com", "doctor11@org2.example.com", "patient11@org2.example.com"}
 
 	for _, user := range userList {
@@ -46,7 +46,8 @@ func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 	// read the certificate pem
 	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
 	if err != nil {
-		return err
+		log.Println("Certificate not found. Skipping")
+		return nil
 	}
 
 	keyDir := filepath.Join(credPath, "keystore")
