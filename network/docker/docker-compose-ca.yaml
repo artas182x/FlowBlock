@@ -69,7 +69,7 @@ services:
       placement:
         constraints:
           - node.labels.org == org2
-      
+
   ca_org3:
     image: hyperledger/fabric-ca:latest
     labels:
