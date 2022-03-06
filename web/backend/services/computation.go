@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/vars"
@@ -69,10 +70,23 @@ func InitCelery() {
 
 	backendRedis = gocelery.RedisCeleryBackend{Pool: redisPool}
 
+	workersNumStr := os.Getenv("WORKERS_NUM")
+	workersNum := 1
+	var err error
+
+	if workersNumStr != "" {
+		workersNum, err = strconv.Atoi(workersNumStr)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	log.Printf("Executors number: %d\n", workersNum)
+
 	cli, _ = gocelery.NewCeleryClient(
 		gocelery.NewRedisBroker(redisPool),
 		&backendRedis,
-		10,
+		workersNum,
 	)
 
 	cli.Register(TASK_NAME, runTask)
