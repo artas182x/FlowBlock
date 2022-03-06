@@ -247,7 +247,7 @@ function createOrg2() {
   { set +x; } 2>/dev/null
   fabric-ca-client enroll -u https://doctor11:123@localhost:8054 --caname ca-org2 -M "${PWD}/organizations/peerOrganizations/org2.example.com/users/doctor11@org2.example.com/msp" --tls.certfiles "${PWD}/organizations/fabric-ca/org2/tls-cert.pem"
   { set +x; } 2>/dev/null
-12054
+
   cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/patient11@org2.example.com/msp/config.yaml"
   cp "${PWD}/organizations/peerOrganizations/org2.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org2.example.com/users/doctor11@org2.example.com/msp/config.yaml"
 
@@ -381,7 +381,7 @@ function createOrg3 {
 
   infoln "Generating the peer1 msp"
   set -x
-  fabric-ca-client enroll -u https://peer1:peer1pw@localhost:11054 --caname ca-org3 -M "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer1.org3.example.com/msp" --csr.hosts peer0.org3.example.com --tls.certfiles "${PWD}/organizations/fabric-ca/org3/tls-cert.pem"
+  fabric-ca-client enroll -u https://peer1:peer1pw@localhost:11054 --caname ca-org3 -M "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer1.org3.example.com/msp" --csr.hosts peer1.org3.example.com --tls.certfiles "${PWD}/organizations/fabric-ca/org3/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   cp "${PWD}/organizations/peerOrganizations/org3.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/msp/config.yaml"
@@ -494,7 +494,7 @@ function createOrg4 {
 
   infoln "Generating the peer1 msp"
   set -x
-  fabric-ca-client enroll -u https://peer1:peer1pw@localhost:12054 --caname ca-org4 -M "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer1.org4.example.com/msp" --csr.hosts peer0.org4.example.com --tls.certfiles "${PWD}/organizations/fabric-ca/org4/tls-cert.pem"
+  fabric-ca-client enroll -u https://peer1:peer1pw@localhost:12054 --caname ca-org4 -M "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer1.org4.example.com/msp" --csr.hosts peer1.org4.example.com --tls.certfiles "${PWD}/organizations/fabric-ca/org4/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   cp "${PWD}/organizations/peerOrganizations/org4.example.com/msp/config.yaml" "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/msp/config.yaml"
