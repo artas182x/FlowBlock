@@ -78,7 +78,7 @@ In this repository there is a Vagrant demo included. You can use it to setup loc
 1. Go to network directory
 2. Run ./restart.sh command (run from manager node)
 3. Go to web directory
-4. Type: docker stack deploy -c docker-compose.yml test
+4. Type: docker stack deploy -c docker-compose.yml web
 
 # Useful scripts
 
@@ -89,5 +89,6 @@ In helper-apps you will find two application that may be useful:
 
 # Stop network and cleanup
 
+1. docker stack rm web (run from manager node)
 1. docker stack rm test (run from manager node)
 2. On each node execute: docker volume rm $(docker volume ls -q)

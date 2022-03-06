@@ -72,7 +72,7 @@ func InitCelery() {
 	cli, _ = gocelery.NewCeleryClient(
 		gocelery.NewRedisBroker(redisPool),
 		&backendRedis,
-		5,
+		10,
 	)
 
 	cli.Register(TASK_NAME, runTask)
