@@ -47,7 +47,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 func randDate(currId int) time.Time {
 	min := time.Date(2020, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
 
-	sec := min + int64(currId)*1000
+	sec := min + int64(currId)*90000
 	return time.Unix(sec, 0)
 }
 
