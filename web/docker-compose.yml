@@ -14,18 +14,18 @@ x-frontend-common: &frontend-common
 
 x-backend-common: &backend-common
   restart: unless-stopped
-  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.2
+  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.3
   build: ./backend
   depends_on:
     - redis
-    - minio-server
+    - minio1
   networks:
     - hyperledger
   environment:
     - REDIS_URL=redis://redis:6379
     - MINIO_ROOT_USER=admin
     - MINIO_ROOT_PASSWORD=adminadmin
-    - MINIO_URL=http://minio-server:9000
+    - WORKERS_NUM=1
 
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2022-03-05T06-32-39Z
@@ -50,21 +50,6 @@ services:
  #   ports:
  #     - 6379:6379
 
-  minio-server:
-    image: nginx:1.21.6
-    hostname: minio-server
-    volumes:
-      - ./minio/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    depends_on:
-      - minio1
-      - minio2
-    networks:
-      hyperledger:
-        aliases:
-          - minio-server
 
   minio-client:
     image: minio/mc
@@ -73,10 +58,11 @@ services:
     volumes:
       - "${PWD}/sample_files/:/files/"
     depends_on:
-      - minio-server
+      - minio1
+      - minio2
     entrypoint: >
      /bin/sh -c "sleep 5 &&
-     /usr/bin/mc config host add myminio http://minio-server:9000 admin adminadmin;
+     /usr/bin/mc config host add myminio http://minio1:9000 admin adminadmin;
      /usr/bin/mc mb myminio/input-files;
      /usr/bin/mc cp /files/* myminio/input-files
      "
@@ -112,6 +98,8 @@ services:
       placement:
         constraints:
           - node.labels.org == org1
+    environment:
+      - MINIO_URL=http://minio1:9000
 
   frontend2:
     <<: *frontend-common
@@ -133,6 +121,8 @@ services:
       placement:
         constraints:
           - node.labels.org == org2
+    environment:
+      - MINIO_URL=http://minio2:9000
 
   minio2:
     <<: *minio-common
