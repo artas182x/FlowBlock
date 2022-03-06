@@ -33,6 +33,7 @@ func main() {
 func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 	log.Printf("============ Populating wallet for user %s ============", userOrg)
 	org := strings.Split(userOrg, "@")[1]
+	orgNum := getStringInBetween(org, "org", ".example.com")
 	credPath := filepath.Join(
 		"/app",
 		"peerOrganizations",
@@ -65,7 +66,23 @@ func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 		return err
 	}
 
-	identity := gateway.NewX509Identity("Org1MSP", string(cert), string(key))
+	orgMSP := "Org" + orgNum + "MSP"
+
+	identity := gateway.NewX509Identity(orgMSP, string(cert), string(key))
 
 	return wallet.Put(userOrg, identity)
+}
+
+func getStringInBetween(str string, start string, end string) (result string) {
+	s := strings.Index(str, start)
+	if s == -1 {
+		return
+	}
+	s += len(start)
+	e := strings.Index(str[s:], end)
+	if e == -1 {
+		return
+	}
+	e += s + e - 1
+	return str[s:e]
 }
