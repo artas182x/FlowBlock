@@ -19,10 +19,11 @@ volumes:
 networks:
   test:
     name: fabric_test
+    external: true
 
 services:
 
-  orderer.example.com:
+  ordererexamplecom:
     container_name: orderer.example.com
     image: hyperledger/fabric-orderer:latest
     labels:
@@ -67,9 +68,11 @@ services:
       - 7053:7053
       - 17050:17050
     networks:
-      - test
+      test:
+        aliases:
+          - orderer.example.com
 
-  peer0.org1.example.com:
+  peer0org1examplecom:
     container_name: peer0.org1.example.com
     image: hyperledger/fabric-peer:latest
     labels:
@@ -101,7 +104,7 @@ services:
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:17051
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - CORE_CHAINCODE_GOLANG_RUNTIME=custom/hyperledger-baseos:2.3.3
+      - CORE_CHAINCODE_GOLANG_RUNTIME=registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/hyperledger-baseos:2.3.3
       - CORE_CHAINCODE_GOLANG_DYNAMICLINK=true
     volumes:
         - ${DOCKER_SOCK}:/host/var/run/docker.sock
@@ -115,9 +118,16 @@ services:
       - 7051:7051
       - 17051:17051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org1.example.com
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.org == org1
 
-  peer0.org2.example.com:
+  peer0org2examplecom:
     container_name: peer0.org2.example.com
     image: hyperledger/fabric-peer:latest
     labels:
@@ -149,7 +159,7 @@ services:
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:19051
       - CORE_VM_DOCKER_ATTACHSTDOUT=true      
-      - CORE_CHAINCODE_GOLANG_RUNTIME=custom/hyperledger-baseos:2.3.3
+      - CORE_CHAINCODE_GOLANG_RUNTIME=registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/hyperledger-baseos:2.3.3
       - CORE_CHAINCODE_GOLANG_DYNAMICLINK=true
     volumes:
         - ${DOCKER_SOCK}:/host/var/run/docker.sock
@@ -163,10 +173,16 @@ services:
       - 9051:9051
       - 19051:19051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org2.example.com
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org2
       
-  peer0.org3.example.com:
-    container_name: peer0.org3.example.com
+  peer0org3examplecom:
+    container_name: peer0org3examplecom
     image: hyperledger/fabric-peer:latest
     labels:
       service: hyperledger-fabric
@@ -208,10 +224,16 @@ services:
     ports:
       - 11051:11051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org3.example.com
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org3
 
-  peer0.org4.example.com:
-    container_name: peer0.org4.example.com
+  peer0org4examplecom:
+    container_name: peer0org4examplecom
     image: hyperledger/fabric-peer:latest
     labels:
       service: hyperledger-fabric
@@ -253,7 +275,13 @@ services:
     ports:
       - 12051:12051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org4.example.com
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org4
 
   peer1.org1.example.com:
     container_name: peer1.org1.example.com
@@ -459,7 +487,11 @@ services:
         - ../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
         - ../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
     depends_on:
-      - peer0.org1.example.com
-      - peer0.org2.example.com
+      - peer0org1examplecom
+      - peer0org2examplecom
     networks:
       - test
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager

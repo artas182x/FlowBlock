@@ -44,3 +44,4 @@ vendor/
 
 web/sample_files/*.jpeg
 
+.vagrant
