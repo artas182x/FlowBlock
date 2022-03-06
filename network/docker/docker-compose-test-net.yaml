@@ -176,8 +176,8 @@ services:
         constraints:
           - node.labels.org == org2
       
-  peer0.org3.example.com:
-    container_name: peer0.org3.example.com
+  peer0org3examplecom:
+    container_name: peer0org3examplecom
     image: hyperledger/fabric-peer:latest
     labels:
       service: hyperledger-fabric
@@ -219,7 +219,13 @@ services:
     ports:
       - 11051:11051
     networks:
-      - test
+      test:
+        aliases:
+          - peer0.org3.example.com
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org3
 
   cli:
     container_name: cli
