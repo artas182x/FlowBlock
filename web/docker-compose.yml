@@ -197,6 +197,12 @@ services:
       placement:
         constraints:
           - node.labels.org == org4
+    environment:
+      - MINIO_URL=http://minio4:9000
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
+      - WORKERS_NUM=1
 
   minio4:
     <<: *minio-common
