@@ -21,6 +21,7 @@ appUser.id
 *~
 *.tar.gz
 log.txt
+!.gitkeep
 
 ### Go ###
 # Binaries for programs and plugins
