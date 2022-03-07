@@ -21,3 +21,5 @@ OrdererOrgs:
         SANS:
           - localhost
           - orderer.example2.com
+          - orderer2.example2.com
+          - orderer3.example2.com

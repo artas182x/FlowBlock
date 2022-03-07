@@ -285,6 +285,8 @@ Orderer: &OrdererDefaults
         - orderer.example.com:7050
         - orderer2.example.com:7150
         - orderer.example2.com:27050
+        - orderer2.example2.com:27150
+        - orderer3.example2.com:27250
 
     EtcdRaft:
         Consenters:
@@ -300,6 +302,16 @@ Orderer: &OrdererDefaults
           Port: 27050
           ClientTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt
           ServerTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt
+        - Host: orderer2.example2.com
+          Port: 27150
+          ClientTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/server.crt
+        - Host: orderer3.example2.com
+          Port: 27250
+          ClientTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/server.crt
+
+
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s

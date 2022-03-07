@@ -289,6 +289,16 @@ function createOrderer2() {
   fabric-ca-client register --caname ca-orderer --id.name orderer --id.secret ordererpw --id.type orderer --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
+  infoln "Registering orderer 2"
+  set -x
+  fabric-ca-client register --caname ca-orderer --id.name orderer2 --id.secret ordererpw --id.type orderer --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
+  infoln "Registering orderer 3"
+  set -x
+  fabric-ca-client register --caname ca-orderer --id.name orderer3 --id.secret ordererpw --id.type orderer --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
   infoln "Registering the orderer admin"
   set -x
   fabric-ca-client register --caname ca-orderer --id.name ordererAdmin --id.secret ordererAdminpw --id.type admin --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
@@ -299,19 +309,57 @@ function createOrderer2() {
   fabric-ca-client enroll -u https://orderer:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/msp" --csr.hosts orderer.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
+  infoln "Generating the orderer 2 msp"
+  set -x
+  fabric-ca-client enroll -u https://orderer2:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/msp" --csr.hosts orderer2.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
+  infoln "Generating the orderer 3 msp"
+  set -x
+  fabric-ca-client enroll -u https://orderer3:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/msp" --csr.hosts orderer3.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
   cp "${PWD}/organizations/ordererOrganizations/example2.com/msp/config.yaml" "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/msp/config.yaml"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/msp/config.yaml" "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/msp/config.yaml"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/msp/config.yaml" "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/msp/config.yaml"
 
   infoln "Generating the orderer-tls certificates"
   set -x
   fabric-ca-client enroll -u https://orderer:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls" --enrollment.profile tls --csr.hosts orderer.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
   { set +x; } 2>/dev/null
 
+  infoln "Generating the orderer2-tls certificates"
+  set -x
+  fabric-ca-client enroll -u https://orderer2:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls" --enrollment.profile tls --csr.hosts orderer2.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
+  infoln "Generating the orderer3-tls certificates"
+  set -x
+  fabric-ca-client enroll -u https://orderer3:ordererpw@localhost:29054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls" --enrollment.profile tls --csr.hosts orderer3.example2.com --csr.hosts localhost --tls.certfiles "${PWD}/organizations/fabric-ca/ordererOrg2/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
   cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/ca.crt"
   cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/signcerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.crt"
   cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/keystore/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/server.key"
 
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/ca.crt"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/signcerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/server.crt"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/keystore/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/server.key"
+
+
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/ca.crt"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/signcerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/server.crt"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/keystore/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/server.key"
+
+
   mkdir -p "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/msp/tlscacerts"
   cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/msp/tlscacerts/tlsca.example2.com-cert.pem"
+
+  mkdir -p "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/msp/tlscacerts"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer2.example2.com/msp/tlscacerts/tlsca.example2.com-cert.pem"
+
+  mkdir -p "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/msp/tlscacerts"
+  cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer3.example2.com/msp/tlscacerts/tlsca.example2.com-cert.pem"
 
   mkdir -p "${PWD}/organizations/ordererOrganizations/example2.com/msp/tlscacerts"
   cp "${PWD}/organizations/ordererOrganizations/example2.com/orderers/orderer.example2.com/tls/tlscacerts/"* "${PWD}/organizations/ordererOrganizations/example2.com/msp/tlscacerts/tlsca.example2.com-cert.pem"
