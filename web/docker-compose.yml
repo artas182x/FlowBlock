@@ -153,6 +153,14 @@ services:
       - data2-1:/data1
       - data2-2:/data2
 
+  redis3:
+    <<: *redis-common
+    hostname: redis3
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org3
+
   frontend3:
     <<: *frontend-common
     depends_on:
@@ -175,7 +183,7 @@ services:
           - node.labels.org == org3
     environment:
       - MINIO_URL=http://minio3:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis3:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=1
