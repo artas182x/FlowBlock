@@ -200,6 +200,14 @@ services:
       - data3-1:/data1
       - data3-2:/data2
 
+  redis4:
+    <<: *redis-common
+    hostname: redis4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org4
+
   frontend4:
     <<: *frontend-common
     depends_on:
@@ -222,7 +230,7 @@ services:
           - node.labels.org == org4
     environment:
       - MINIO_URL=http://minio4:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis4:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=1
