@@ -149,7 +149,6 @@ queryInstalled() {
   successln "Query installed successful on peer${PEER}.org${ORG} on channel"
 }
 
-
 # approveForMyOrg VERSION PEER ORG
 approveForMyOrg() {
   ORG=$1
@@ -259,7 +258,6 @@ chaincodeInvokeInit() {
   verifyResult $res "Invoke execution on $PEERS failed "
   successln "Invoke transaction successful on $PEERS on channel '$CHANNEL_NAME'"
 }
-
 
 chaincodeQuery() {
   ORG=$1
