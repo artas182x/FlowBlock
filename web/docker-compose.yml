@@ -98,7 +98,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
-      - WORKERS_NUM=1
+      - WORKERS_NUM=2
 
   frontend2:
     <<: *frontend-common
@@ -125,7 +125,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
-      - WORKERS_NUM=1
+      - WORKERS_NUM=2
       
   minio2:
     <<: *minio-common
@@ -163,7 +163,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
-      - WORKERS_NUM=1
+      - WORKERS_NUM=2
 
 
   minio3:
@@ -202,7 +202,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
-      - WORKERS_NUM=1
+      - WORKERS_NUM=2
 
   minio4:
     <<: *minio-common
