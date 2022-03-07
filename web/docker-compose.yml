@@ -36,16 +36,15 @@ x-minio-common: &minio-common
     timeout: 20s
     retries: 3
 
+x-redis-common: &redis-common
+  image: redis:alpine
+  restart: unless-stopped
+  networks:
+    - hyperledger
+#   ports:
+#     - 6379:6379
+
 services:
-  redis:
-    image: redis:alpine
-    restart: unless-stopped
-    networks:
-      - hyperledger
- #   ports:
- #     - 6379:6379
-
-
   minio-client:
     image: minio/mc
     networks:
@@ -61,6 +60,14 @@ services:
      /usr/bin/mc mb myminio/input-files;
      /usr/bin/mc cp /files/* myminio/input-files
      "
+
+  redis1:
+    <<: *redis-common
+    hostname: redis1
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org1
 
   minio1:
     <<: *minio-common
@@ -95,7 +102,7 @@ services:
           - node.labels.org == org1
     environment:
       - MINIO_URL=http://minio1:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis1:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=2
@@ -106,6 +113,14 @@ services:
       - backend2
     environment:
       - BACKEND_HOST=backend2
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org2
+
+  redis2:
+    <<: *redis-common
+    hostname: redis2
     deploy:
       placement:
         constraints:
@@ -122,7 +137,7 @@ services:
           - node.labels.org == org2
     environment:
       - MINIO_URL=http://minio2:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis2:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=2
@@ -137,6 +152,14 @@ services:
     volumes:
       - data2-1:/data1
       - data2-2:/data2
+
+  redis3:
+    <<: *redis-common
+    hostname: redis3
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org3
 
   frontend3:
     <<: *frontend-common
@@ -160,7 +183,7 @@ services:
           - node.labels.org == org3
     environment:
       - MINIO_URL=http://minio3:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis3:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=2
@@ -176,6 +199,14 @@ services:
     volumes:
       - data3-1:/data1
       - data3-2:/data2
+
+  redis4:
+    <<: *redis-common
+    hostname: redis4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.org == org4
 
   frontend4:
     <<: *frontend-common
@@ -199,7 +230,7 @@ services:
           - node.labels.org == org4
     environment:
       - MINIO_URL=http://minio4:9000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis4:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
       - WORKERS_NUM=2
