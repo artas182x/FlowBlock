@@ -24,7 +24,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-type ExampleAlghorytmSmartContract struct {
+type ExampleAlgorithmSmartContract struct {
 	contractapi.Contract
 }
 
@@ -32,31 +32,31 @@ const BASE_DIRECTRORY = "/tmp/exalg/"
 
 var METHODS = []tokenapi.Method{
 	{
-		Name:        "ExampleAlghorytmSmartContract:AvgBloodPreasure",
+		Name:        "ExampleAlgorithmSmartContract:AvgBloodPreasure",
 		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "float32",
 		Description: "Calculates average value of blood preasure",
 	},
 	{
-		Name:        "ExampleAlghorytmSmartContract:MaxHeartRate",
+		Name:        "ExampleAlgorithmSmartContract:MaxHeartRate",
 		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "int64",
 		Description: "Calculates maximum value of heart rate",
 	},
 	{
-		Name:        "ExampleAlghorytmSmartContract:LongRunningMethod",
+		Name:        "ExampleAlgorithmSmartContract:LongRunningMethod",
 		Args:        "patientID:string",
 		RetType:     "int64",
 		Description: "Sleeps and returns 0 is there was no error",
 	},
 	{
-		Name:        "ExampleAlghorytmSmartContract:PneumoniaImageClassification",
+		Name:        "ExampleAlgorithmSmartContract:PneumoniaImageClassification",
 		Args:        "medicalEntryId:string",
 		RetType:     "string",
 		Description: "Runs pneumonia image classification on specified medical entry id",
 	},
 	{
-		Name:        "ExampleAlghorytmSmartContract:XRayPneumoniaCases",
+		Name:        "ExampleAlgorithmSmartContract:XRayPneumoniaCases",
 		Args:        "startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "int64",
 		Description: "Calculates number of pneumonia cases over time based on XRay images",
@@ -211,7 +211,7 @@ func classifyPneumonia(ctx contractapi.TransactionContextInterface, imageFilenam
 }
 
 // Classify pneumonia based on XRay image
-func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contractapi.TransactionContextInterface, nonce string, medicalEntryId string) (*tokenapi.Ret, error) {
+func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contractapi.TransactionContextInterface, nonce string, medicalEntryId string) (*tokenapi.Ret, error) {
 
 	medicalEntryIdDecoded, err := base64.StdEncoding.DecodeString(medicalEntryId)
 
@@ -281,7 +281,7 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 }
 
 // Calculates pneumonia cases over a time
-func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.TransactionContextInterface, nonce string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
+func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.TransactionContextInterface, nonce string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
 
 	params := []string{"MedicalDataSmartContract:GetMedicalEntries", "ChestXRay", startDateTimestamp, endDateTimestamp, nonce}
 	queryArgs := make([][]byte, len(params))
@@ -349,14 +349,14 @@ func addMedicalValue(ctx contractapi.TransactionContextInterface, patientID stri
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
 	if response.Status != shim.OK {
-		return fmt.Errorf("ExampleAlghorytmSmartContract:addMedicalValue: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
+		return fmt.Errorf("ExampleAlgorithmSmartContract:addMedicalValue: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
 	}
 
 	return nil
 }
 
 // Calculates average blood preasure for given patient and data range
-func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
+func (s *ExampleAlgorithmSmartContract) AvgBloodPreasure(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
 
 	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
@@ -416,7 +416,7 @@ func (s *ExampleAlghorytmSmartContract) AvgBloodPreasure(ctx contractapi.Transac
 }
 
 // Calculates maximum heart rate for given patient and data range
-func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
+func (s *ExampleAlgorithmSmartContract) MaxHeartRate(ctx contractapi.TransactionContextInterface, nonce string, patientID string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
 
 	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
@@ -477,7 +477,7 @@ func (s *ExampleAlghorytmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 }
 
 // Some long running algorithm as an example
-func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, patientID string) (*tokenapi.Ret, error) {
+func (s *ExampleAlgorithmSmartContract) LongRunningMethod(ctx contractapi.TransactionContextInterface, nonce string, patientID string) (*tokenapi.Ret, error) {
 
 	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
@@ -497,6 +497,6 @@ func (s *ExampleAlghorytmSmartContract) LongRunningMethod(ctx contractapi.Transa
 }
 
 // Returns all available computation methods
-func (s *ExampleAlghorytmSmartContract) ListAvailableMethods(ctx contractapi.TransactionContextInterface) ([]tokenapi.Method, error) {
+func (s *ExampleAlgorithmSmartContract) ListAvailableMethods(ctx contractapi.TransactionContextInterface) ([]tokenapi.Method, error) {
 	return METHODS, nil
 }

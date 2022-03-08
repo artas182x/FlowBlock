@@ -95,7 +95,7 @@ func main() {
 		contract = network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
 
 		log.Println("--> Evaluate Transaction: RequestToken for AvgBloodPreasure")
-		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlghorytmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlgorithmSmartContract:AvgBloodPreasure", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US;1573657134;1636815534")
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %v", err)
 		}
@@ -117,7 +117,7 @@ func main() {
 
 	/*
 		log.Println("--> Evaluate Transaction: RequestToken for LongRunningMethod")
-		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlghorytmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
+		result, err = contract.SubmitTransaction("RequestToken", "examplealgorithm", "ExampleAlgorithmSmartContract:LongRunningMethod", "CN=patient1,OU=client,O=Hyperledger,ST=North Carolina,C=US")
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %v", err)
 		}
