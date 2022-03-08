@@ -144,7 +144,7 @@ services:
       
   minio2:
     <<: *minio-common
-    hostname: minio1
+    hostname: minio2
     deploy:
       placement:
         constraints:
