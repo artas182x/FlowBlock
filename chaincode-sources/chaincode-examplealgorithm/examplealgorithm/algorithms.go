@@ -154,10 +154,10 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 	return image, err
 }
 
-func downloadPneumoniaModel(baseDir string) error {
+func downloadPneumoniaModel(ctx contractapi.TransactionContextInterface, baseDir string) error {
 	modelFilename := "pneumonia_model.zip"
 	modelChecksum := "64c779ec892aab4c70bc7a81d8c072c0c7c0c2e78d52a112ec43f9c7f99c6d85"
-	err := tokenapi.DownloadFromS3(modelFilename, modelChecksum, baseDir)
+	err := tokenapi.DownloadFromS3(ctx, modelFilename, modelChecksum, baseDir)
 	if err != nil {
 		return err
 	}
@@ -168,8 +168,8 @@ func downloadPneumoniaModel(baseDir string) error {
 	return nil
 }
 
-func classifyPneumonia(imageFilename string, checksum string, baseDir string) (float32, error) {
-	err := tokenapi.DownloadFromS3(imageFilename, checksum, baseDir)
+func classifyPneumonia(ctx contractapi.TransactionContextInterface, imageFilename string, checksum string, baseDir string) (float32, error) {
+	err := tokenapi.DownloadFromS3(ctx, imageFilename, checksum, baseDir)
 	if err != nil {
 		return 0.0, err
 	}
@@ -252,7 +252,7 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 	fmt.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
 
-	err = downloadPneumoniaModel(baseDir)
+	err = downloadPneumoniaModel(ctx, baseDir)
 
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't download model"), RetType: "string"}
@@ -264,7 +264,7 @@ func (s *ExampleAlghorytmSmartContract) PneumoniaImageClassification(ctx contrac
 	checksum := medicalEntryVals[1]
 
 	fmt.Printf("Classifying: %+q\n", fileName)
-	result, err := classifyPneumonia(fileName, checksum, baseDir)
+	result, err := classifyPneumonia(ctx, fileName, checksum, baseDir)
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 		return &ret, nil
@@ -310,7 +310,7 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 	fmt.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
 
-	err = downloadPneumoniaModel(baseDir)
+	err = downloadPneumoniaModel(ctx, baseDir)
 
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't download model"), RetType: "string"}
@@ -324,7 +324,7 @@ func (s *ExampleAlghorytmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 		fileName := medicalEntryVals[0]
 		checksum := medicalEntryVals[1]
 		fmt.Printf("Classifying: %+q\n", fileName)
-		result, err := classifyPneumonia(fileName, checksum, baseDir)
+		result, err := classifyPneumonia(ctx, fileName, checksum, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
 			return &ret, nil
