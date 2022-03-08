@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -61,15 +62,28 @@ func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) 
 }
 
 // Downloads file from S3 to given directory
-func DownloadFromS3(fileName string, sha256sum string, baseDir string) error {
+func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string, sha256sum string, baseDir string) error {
+
+	mspId, err := ctx.GetClientIdentity().GetMSPID()
+
+	if err != nil {
+		fmt.Println("Failed to get MSPID", err)
+		return err
+	}
+
+	fmt.Printf("Organisation: %+q\n", mspId)
 
 	fmt.Printf("Downloading: %+q\n", fileName)
+
+	orgNum := getStringInBetween(mspId, "Org", "MSP")
+
+	s3Endpoint := fmt.Sprintf("http://minio%s:9000", orgNum)
 
 	// Configure to use MinIO Server
 	s3Config := &aws.Config{
 		// TODO: Change auth
 		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
-		Endpoint:         aws.String("http://minio-server:9000"),
+		Endpoint:         aws.String(s3Endpoint),
 		Region:           aws.String("us-east-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
@@ -129,4 +143,18 @@ func calculateSha256(filePath string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+func getStringInBetween(str string, start string, end string) (result string) {
+	s := strings.Index(str, start)
+	if s == -1 {
+		return
+	}
+	s += len(start)
+	e := strings.Index(str[s:], end)
+	if e == -1 {
+		return
+	}
+	e += s + e - 1
+	return str[s:e]
 }
