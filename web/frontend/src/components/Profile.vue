@@ -11,7 +11,7 @@
     </p>
     <p>
       <strong>Certificate:</strong>
-      {{ loginData.user.Login.certificate.substring(40, 60)  }} ...
+      {{ loginData.user.Login.certificate.substring(40, 60) }} ...
     </p>
     <p>
       <strong>Id:</strong>
@@ -23,7 +23,12 @@
     </p>
     <strong>Roles:</strong>
     <ul>
-      <li v-for="role in loginData.user.Roles" :key="role">{{role}}</li>
+      <li
+        v-for="role in loginData.user.Roles"
+        :key="role"
+      >
+        {{ role }}
+      </li>
     </ul>
   </div>
 </template>
@@ -32,6 +37,7 @@
 import UserService from "@/services/user.service";
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Profile',
   computed: {
     loginData() {
@@ -43,6 +49,7 @@ export default {
       this.$router.push('/login');
     }
     UserService.refreshToken().then(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         () => {},
         (error) => {
           if (error.response.status === 401) {

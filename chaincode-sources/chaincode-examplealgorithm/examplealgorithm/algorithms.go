@@ -28,7 +28,7 @@ type ExampleAlgorithmSmartContract struct {
 	contractapi.Contract
 }
 
-const BASE_DIRECTRORY = "/tmp/exalg/"
+const BASE_DIRECTORY = "/tmp/exalg/"
 
 var METHODS = []tokenapi.Method{
 	{
@@ -60,6 +60,12 @@ var METHODS = []tokenapi.Method{
 		Args:        "startDateTimestamp:ts;endDateTimestamp:ts",
 		RetType:     "int64",
 		Description: "Calculates number of pneumonia cases over time based on XRay images",
+	},
+	{
+		Name:        "ExampleAlgorithmSmartContract:CreateChart",
+		Args:        "tokenIds:tokenInputs",
+		RetType:     "string",
+		Description: "Creates simple chart basign on values from other computation algorithms",
 	},
 }
 
@@ -247,7 +253,7 @@ func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contrac
 		return &ret, nil
 	}
 
-	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTRORY, rand.Intn(100000))
+	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTORY, rand.Intn(100000))
 
 	fmt.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
@@ -305,7 +311,7 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 		return &ret, nil
 	}
 
-	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTRORY, rand.Intn(100000))
+	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTORY, rand.Intn(100000))
 
 	fmt.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
@@ -335,7 +341,6 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 	}
 
 	ret := tokenapi.Ret{RetValue: fmt.Sprint(cases), RetType: "int64"}
-
 	return &ret, nil
 }
 
@@ -492,6 +497,81 @@ func (s *ExampleAlgorithmSmartContract) LongRunningMethod(ctx contractapi.Transa
 	time.Sleep(60 * time.Second)
 
 	ret := tokenapi.Ret{RetValue: "0", RetType: METHODS[2].RetType}
+
+	return &ret, nil
+}
+
+// Calculates average blood preasure for given patient and data range
+func (s *ExampleAlgorithmSmartContract) CreateChart(ctx contractapi.TransactionContextInterface, nonce string, tokenIds string) (*tokenapi.Ret, error) {
+
+	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
+	if err != nil {
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Security error"), RetType: "string"}
+		return &ret, nil
+	}
+	if !isNonceValid {
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Security error"), RetType: "string"}
+		return &ret, nil
+	}
+
+	vals := make(map[string]float32)
+
+	tokenIdSlice := strings.Split(tokenIds, "|")
+
+	for _, tokenId := range tokenIdSlice {
+		params := []string{"ComputationTokenSmartContract:ReadToken", tokenId}
+		queryArgs := make([][]byte, len(params))
+		for i, arg := range params {
+			queryArgs[i] = []byte(arg)
+		}
+
+		fmt.Printf("Reading token: %+q\n", tokenId)
+
+		response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
+
+		if response.Status != shim.OK {
+			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't read data from Blockchain"), RetType: "string"}
+			return &ret, nil
+		}
+
+		var token tokenapi.Token
+		err = json.Unmarshal(response.Payload, &token)
+		if err != nil {
+			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain"), RetType: "string"}
+			return &ret, nil
+		}
+
+		if token.Ret.RetType == "int64" {
+			intVar, err := strconv.Atoi(token.Ret.RetValue)
+			if err != nil {
+				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->int64)"), RetType: "string"}
+				return &ret, nil
+			}
+			vals[tokenId] = float32(intVar)
+		} else if token.Ret.RetType == "float32" {
+			floatVar, err := strconv.ParseFloat(token.Ret.RetValue, 32)
+			if err != nil {
+				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->float32)"), RetType: "string"}
+				return &ret, nil
+			}
+			vals[tokenId] = float32(floatVar)
+		} else if token.Ret.RetType == "float64" {
+			floatVar, err := strconv.ParseFloat(token.Ret.RetValue, 64)
+			if err != nil {
+				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->float64)"), RetType: "string"}
+				return &ret, nil
+			}
+			vals[tokenId] = float32(floatVar)
+		} else {
+			ret := tokenapi.Ret{RetValue: fmt.Sprintf("Error: unsupported token value (id: %s)\n", tokenId), RetType: "string"}
+			return &ret, nil
+		}
+
+	}
+
+	jsonStr, err := json.Marshal(vals)
+
+	ret := tokenapi.Ret{RetValue: string(jsonStr), RetType: "string"}
 
 	return &ret, nil
 }

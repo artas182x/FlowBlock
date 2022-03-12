@@ -26,5 +26,4 @@ docker tag registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/fa
 
 docker pull registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/hyperledger-baseos:2.3.3
 
-docker pull minio/minio:latest
 docker pull redis:alpine

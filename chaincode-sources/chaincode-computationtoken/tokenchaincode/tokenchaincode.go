@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,16 +25,17 @@ type ComputationTokenSmartContract struct {
 }
 
 // AddEntry issues a new entry to the world state with given details.
-func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string) (*tokenapi.Token, error) {
+func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string, description string, directlyExecutable bool) (*tokenapi.Token, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, ctx.GetStub().GetTxID()})
 
 	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
 		return nil, err
 	}
 	timeRequested := time.Unix(int64(timestampRequested.GetSeconds()), int64(timestampRequested.GetNanos())).UTC()
+
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, strconv.FormatInt(timestampRequested.GetSeconds(), 10)})
 
 	expirationTime := timeRequested.Add(time.Minute * time.Duration(TOKEN_VALID_MINUTES))
 
@@ -88,13 +90,15 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 
 	token := tokenapi.Token{
-		ID:             base64.URLEncoding.EncodeToString([]byte(id)),
-		UserRequested:  x509.Subject.ToRDNSequence().String(),
-		ChaincodeName:  chaincodeName,
-		Method:         method,
-		Arguments:      mergedArgsString,
-		TimeRequested:  timeRequested,
-		ExpirationTime: expirationTime,
+		ID:                 base64.URLEncoding.EncodeToString([]byte(id)),
+		UserRequested:      x509.Subject.ToRDNSequence().String(),
+		ChaincodeName:      chaincodeName,
+		Method:             method,
+		Arguments:          mergedArgsString,
+		TimeRequested:      timeRequested,
+		ExpirationTime:     expirationTime,
+		Description:        description,
+		DirectlyExecutable: directlyExecutable,
 	}
 
 	tokenJSON, err := json.Marshal(token)

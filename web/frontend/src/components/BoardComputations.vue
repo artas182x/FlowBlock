@@ -1,47 +1,60 @@
 <template>
   <div class="jumbotron">
-    <h1 class="display-4">My workflows</h1>
+    <h1 class="display-4">
+      My workflows
+    </h1>
   </div>
   <div>
-
-    <div v-if="submitSuccess" class="alert alert-success">
+    <div
+      v-if="submitSuccess"
+      class="alert alert-success"
+    >
       You successfully scheduled a task
     </div>
 
-    <div v-if="submitError" class="alert alert-danger">
+    <div
+      v-if="submitError"
+      class="alert alert-danger"
+    >
       Error during scheduling a task
     </div>
 
-    <button type="button" class="btn btn-primary float-sm-end" @click="goToTokenSubmit()">Submit a workflow</button>
+    <button
+      type="button"
+      class="btn btn-primary float-sm-end"
+      @click="goToTokenSubmit()"
+    >
+      Submit a workflow
+    </button>
 
     <h1>Queue</h1>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableQueue.isLoading"
-        :columns="tableQueue.columns"
-        :rows="tableQueue.rows"
-        :total="tableQueue.totalRecordCount"
-        @do-search="doSearchQueue"
+      :is-slot-mode="true"
+      :is-loading="tableQueue.isLoading"
+      :columns="tableQueue.columns"
+      :rows="tableQueue.rows"
+      :total="tableQueue.totalRecordCount"
+      @do-search="doSearchQueue"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
 
-    <p></p>
+    <p />
     <h1>My tokens</h1>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableTokens.isLoading"
-        :columns="tableTokens.columns"
-        :rows="tableTokens.rows"
-        :total="tableTokens.totalRecordCount"
-        @do-search="doSearchTokens"
-        @is-finished="tableLoadingFinish"
+      :is-slot-mode="true"
+      :is-loading="tableTokens.isLoading"
+      :columns="tableTokens.columns"
+      :rows="tableTokens.rows"
+      :total="tableTokens.totalRecordCount"
+      @do-search="doSearchTokens"
+      @is-finished="tableLoadingFinish"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
@@ -151,6 +164,22 @@ export default {
         totalRecordCount: 0,
       });
     }
+  },
+  mounted() {
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
+    UserService.refreshToken().then(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {},
+        (error) => {
+          if (error.response.status === 401) {
+            this.logOut()
+          }
+        }
+    )
+    this.doSearchQueue(0, 10)
+    this.doSearchTokens(0, 10)
   },
   methods: {
     goToTokenSubmit(){
@@ -303,21 +332,6 @@ export default {
       this.$store.dispatch('auth/logout');
       this.$router.push('/login');
     }
-  },
-  mounted() {
-    if (!this.currentUser) {
-      this.$router.push('/login');
-    }
-    UserService.refreshToken().then(
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
-    this.doSearchQueue(0, 10)
-    this.doSearchTokens(0, 10)
   },
 
 }

@@ -34,14 +34,49 @@ type Ret struct {
 }
 
 type Token struct {
-	ID             string    `json:"ID"` //Must be string
-	UserRequested  string    `json:userRequested`
-	ChaincodeName  string    `json:chaincodeName`
-	Method         string    `json:method`
-	Arguments      string    `json:arguments`
-	Ret            Ret       `json:"ret,omitempty" metadata:"ret,optional"`
-	TimeRequested  time.Time `json:timeRequested`
-	ExpirationTime time.Time `json.expirationTime`
+	ID                 string    `json:"ID"` //Must be string
+	UserRequested      string    `json:userRequested`
+	ChaincodeName      string    `json:chaincodeName`
+	Method             string    `json:method`
+	Arguments          string    `json:arguments`
+	Ret                Ret       `json:"ret,omitempty" metadata:"ret,optional"`
+	TimeRequested      time.Time `json:timeRequested`
+	ExpirationTime     time.Time `json:expirationTime`
+	Description        string    `json:description`
+	DirectlyExecutable bool      `json:directlyExecutable`
+}
+
+type Interface struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type Options struct {
+	Value string `json:"value"`
+	Name  string `json:"name"`
+}
+
+type Connection struct {
+	ID   string `json:"id"`
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
+type Node struct {
+	Type               string      `json:"type"`
+	ID                 string      `json:"id"`
+	Name               string      `json:"name"`
+	ChaincodeName      string      `json:"chaincodeName"`
+	TokenId            string      `json:"tokenId"`
+	MethodName         string      `json:"methodName"`
+	Options            []Options   `json:"options"`
+	Interfaces         []Interface `json:"interfaces"`
+	DirectlyExecutable bool        `json:"directlyExecutable"`
+}
+
+type Flow struct {
+	Nodes       []Node       `json:"nodes"`
+	Connections []Connection `json:"connections"`
 }
 
 // Check whether nonce provided in parameter is equal to actual nonce. Can be used to check

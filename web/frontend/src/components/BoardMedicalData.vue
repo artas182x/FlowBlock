@@ -1,27 +1,30 @@
 <template>
   <div class="jumbotron">
-    <h1 class="display-4">Medical data</h1>
+    <h1 class="display-4">
+      Medical data
+    </h1>
   </div>
   <div>
-
     <h3>Show only data that you have rights to read</h3>
-    <h4>If you are academic institution you are probably looking for <router-link to="/computations"> <font-awesome-icon icon="microchip" /> Workflows </router-link></h4>
+    <h4>
+      If you are academic institution you are probably looking for <router-link to="/computations">
+        <font-awesome-icon icon="microchip" /> Workflows
+      </router-link>
+    </h4>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableMedicalData.isLoading"
-        :columns="tableMedicalData.columns"
-        :rows="tableMedicalData.rows"
-        :total="tableMedicalData.totalRecordCount"
-        @do-search="doSearchMedicalData"
-        @is-finished="tableLoadingFinish"
+      :is-slot-mode="true"
+      :is-loading="tableMedicalData.isLoading"
+      :columns="tableMedicalData.columns"
+      :rows="tableMedicalData.rows"
+      :total="tableMedicalData.totalRecordCount"
+      @do-search="doSearchMedicalData"
+      @is-finished="tableLoadingFinish"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
-
-
   </div>
 </template>
 
@@ -99,6 +102,21 @@ export default {
     },
 
   },
+  mounted() {
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
+    UserService.refreshToken().then(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {},
+        (error) => {
+          if (error.response.status === 401) {
+            this.logOut()
+          }
+        }
+    )
+    this.doSearchMedicalData(0, 10)
+  },
   methods: {
 
     tableLoadingFinish(elements) {
@@ -167,20 +185,6 @@ export default {
       this.$store.dispatch('auth/logout');
       this.$router.push('/login');
     }
-  },
-  mounted() {
-    if (!this.currentUser) {
-      this.$router.push('/login');
-    }
-    UserService.refreshToken().then(
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
-    this.doSearchMedicalData(0, 10)
   },
 
 }

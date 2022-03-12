@@ -5,7 +5,7 @@ import Login from "./components/Login.vue";
 // lazy-loaded
 const Profile = () => import("./components/Profile.vue")
 const BoardComputations = () => import("./components/BoardComputations.vue")
-const TokenSubmit = () =>  import("@/components/TokenSubmit");
+const TokenSubmit = () =>  import("@/components/TokenSubmit.vue");
 const BoardMedicalData = () => import("./components/BoardMedicalData.vue")
 
 const routes = [
