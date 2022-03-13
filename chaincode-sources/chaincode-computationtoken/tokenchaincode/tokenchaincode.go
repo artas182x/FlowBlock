@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,8 @@ import (
 
 const INDEX_NAME = "tokens"
 const KEY_NAME = "tokens"
+
+const TOKEN_VALID_MINUTES = 10
 
 type ComputationTokenSmartContract struct {
 	contractapi.Contract
@@ -36,7 +39,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 
 	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, strconv.FormatInt(timestampRequested.GetSeconds(), 10), method, arguments})
 
-	expirationTime := timeRequested.Add(time.Minute * time.Duration(tokenapi.TOKEN_VALID_MINUTES))
+	expirationTime := timeRequested.Add(time.Minute * time.Duration(TOKEN_VALID_MINUTES))
 
 	err = cid.AssertAttributeValue(ctx.GetStub(), "RequestTokenRole", "1")
 	if err != nil {
@@ -44,10 +47,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 
 	params := []string{"ListAvailableMethods"}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
 	response := ctx.GetStub().InvokeChaincode(chaincodeName, queryArgs, "")
 
@@ -62,11 +62,17 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, err
 	}
 
+	var inputArgs []tokenapi.Argument
+	err = json.Unmarshal(response.Payload, &inputArgs)
+	if err != nil {
+		return nil, err
+	}
+
 	var selectedMethod tokenapi.Method
 
 	for _, element := range methods {
 		if element.Name == method {
-			if len(strings.Split(element.Args, ";")) == len(strings.Split(arguments, ";")) {
+			if len(element.Args) == len(strings.Split(arguments, ";")) {
 				found = true
 				selectedMethod = element
 				break
@@ -77,15 +83,9 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, fmt.Errorf("ComputationTokenSmartContract:RequestToken: Method %s with arguments %s not found in %s", method, arguments, chaincodeName)
 	}
 
-	var mergedArgsString string = ""
-	argsArray := strings.Split(arguments, ";")
-
-	for num, arg := range strings.Split(selectedMethod.Args, ";") {
-		argsSplit := strings.Split(arg, ":")
-		mergedArgsString += fmt.Sprintf("%s:%s:%s", argsArray[num], argsSplit[0], argsSplit[1])
-		if num < len(argsArray)-1 {
-			mergedArgsString += ";"
-		}
+	for i, arg := range selectedMethod.Args {
+		inputArgs[i].Name = arg.Name
+		inputArgs[i].Type = arg.Type
 	}
 
 	token := tokenapi.Token{
@@ -93,7 +93,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		UserRequested:      x509.Subject.ToRDNSequence().String(),
 		ChaincodeName:      chaincodeName,
 		Method:             method,
-		Arguments:          mergedArgsString,
+		Arguments:          inputArgs,
 		TimeRequested:      timeRequested,
 		ExpirationTime:     expirationTime,
 		Description:        description,
@@ -169,12 +169,106 @@ func (s *ComputationTokenSmartContract) ReadUserTokens(ctx contractapi.Transacti
 
 // ReadToken returns the token entry stored in the world state with given id.
 func (s *ComputationTokenSmartContract) ReadToken(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
-	return tokenapi.ReadToken(ctx, id)
+	decodedId, err := base64.URLEncoding.DecodeString(id)
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
+	}
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to read from world state: %v", err)
+	}
+	if tokenJSON == nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: token %s does not exist", id)
+	}
+
+	var token tokenapi.Token
+	err = json.Unmarshal(tokenJSON, &token)
+	if err != nil {
+		return nil, err
+	}
+
+	x509, _ := cid.GetX509Certificate(ctx.GetStub())
+	if token.UserRequested != x509.Subject.ToRDNSequence().String() {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: set not a owner of this token")
+	}
+
+	return &token, nil
 }
 
 // Compute method launches alghoritm provided it has correct token
 func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionContextInterface, id string) (*tokenapi.Token, error) {
-	return tokenapi.Compute(ctx, id)
+	decodedId, err := base64.URLEncoding.DecodeString(id)
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
+	}
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to read from world state: %v", err)
+	}
+	if tokenJSON == nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token %s does not exist", id)
+	}
+
+	var token tokenapi.Token
+	err = json.Unmarshal(tokenJSON, &token)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenValid, err := isTokenValid(ctx, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tokenValid {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token is invalid")
+	}
+
+	nonce_byte, _ := ctx.GetStub().GetCreator()
+	nonce := base64.StdEncoding.EncodeToString(nonce_byte)
+
+	params := []string{token.Method, nonce}
+
+	log.Printf("Starting computing: %s %+q\n", token.Method, params)
+
+	queryArgs := make([][]byte, len(params))
+	for i, arg := range token.Arguments {
+
+		if arg.Type == "tokenInputs" {
+			//TODO
+		}
+
+		queryArgs[i] = []byte(arg.Value)
+	}
+
+	response := ctx.GetStub().InvokeChaincode("examplealgorithm", queryArgs, "")
+
+	if response.Status != shim.OK {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
+	}
+
+	var ret tokenapi.Ret
+	err = json.Unmarshal(response.Payload, &ret)
+	if err != nil {
+		return nil, err
+	}
+
+	token.Ret = ret
+
+	tokenJSON, err = json.Marshal(token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.GetStub().PutState(string(decodedId), tokenJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Finished computing: %s %+q\n", token.Method, params)
+
+	return &token, nil
 }
 
 // GetAllEntriesAdmin returns all roken entries found in world state. Only admin can execute this
@@ -211,4 +305,44 @@ func (s *ComputationTokenSmartContract) GetAllEntriesAdmin(ctx contractapi.Trans
 	}
 
 	return tokens, nil
+}
+
+// Check whether nonce provided in parameter is equal to actual nonce. Can be used to check
+// whether method has been executed by other method/chaincode. We should use this function
+// to forbid users from direct access to algorithm function. Each algorithm should use this
+// function before computation starts
+// Nonce is in fact ctx.GetStub().GetCreator() converted to base64
+func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
+	creatorByte, err := ctx.GetStub().GetCreator()
+	if err != nil {
+		return false, err
+	}
+
+	creator := base64.StdEncoding.EncodeToString(creatorByte)
+
+	fmt.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
+	return creator == nonceStr, nil
+}
+
+// Check if token in valid (only date and time and owner is checked)
+func isTokenValid(ctx contractapi.TransactionContextInterface, token tokenapi.Token) (bool, error) {
+	x509, _ := cid.GetX509Certificate(ctx.GetStub())
+	if token.UserRequested != x509.Subject.ToRDNSequence().String() {
+		return false, fmt.Errorf("ComputationTokenSmartContract:isTokenValid: user not owner of this token")
+	}
+
+	currTimestamp, err := ctx.GetStub().GetTxTimestamp()
+
+	if err != nil {
+		return false, err
+	}
+
+	currTime := time.Unix(int64(currTimestamp.GetSeconds()), int64(currTimestamp.GetNanos())).UTC()
+	timeDiff := currTime.Sub(token.TimeRequested)
+
+	if timeDiff.Minutes() > TOKEN_VALID_MINUTES {
+		return false, fmt.Errorf("ComputationTokenSmartContract:isTokenValid: token expired")
+	}
+
+	return true, nil
 }

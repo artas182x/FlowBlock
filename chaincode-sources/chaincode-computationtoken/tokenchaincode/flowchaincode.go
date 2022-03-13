@@ -86,13 +86,16 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 		}
 	}
 
-	var argsString string
+	var args []tokenapi.Argument
 
-	for index, arg := range params {
-		argsString += arg
-		if index < len(params)-1 {
-			argsString += ";"
-		}
+	for _, arg := range params {
+		args = append(args, tokenapi.Argument{Value: arg})
+	}
+
+	argsJson, err := json.Marshal(args)
+
+	if err != nil {
+		return "", err
 	}
 
 	directlyExecutableStr := "false"
@@ -101,7 +104,7 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 		directlyExecutableStr = "true"
 	}
 
-	token, err := s.RequestToken(ctx, node.ChaincodeName, node.MethodName, argsString, description, directlyExecutableStr)
+	token, err := s.RequestToken(ctx, node.ChaincodeName, node.MethodName, string(argsJson), description, directlyExecutableStr)
 
 	if err != nil {
 		return "", err
