@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,18 +40,19 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 	mspId, err := ctx.GetClientIdentity().GetMSPID()
 
 	if err != nil {
-		fmt.Println("Failed to get MSPID %w", err)
+		log.Printf("Failed to get MSPID %v", err)
 		return "", err
 	}
 
 	file, err := os.Open(filePath)
+
 	if err != nil {
-		fmt.Errorf("Failed to open file %s %w", filePath, err)
+		log.Printf("failed to open file %s %v", filePath, err)
 		return "", err
 	}
 	defer file.Close()
 
-	fmt.Printf("Organisation: %+q\n", mspId)
+	log.Printf("Organisation: %+q\n", mspId)
 
 	orgNum := getStringInBetween(mspId, "Org", "MSP")
 
@@ -67,7 +69,7 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 	s3Key := fmt.Sprintf("%s?%s", fileName, sha256sumCalculated)
 
 	if err != nil {
-		fmt.Println("Failed to calculate checksum %w", err)
+		log.Printf("Failed to calculate checksum %v", err)
 		return "", err
 	}
 
@@ -78,7 +80,7 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 	})
 
 	if err != nil {
-		fmt.Println("Failed to upload file to S3 %w", err)
+		log.Printf("Failed to upload file to S3 %v", err)
 		return "", err
 	}
 
@@ -91,13 +93,13 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 	mspId, err := ctx.GetClientIdentity().GetMSPID()
 
 	if err != nil {
-		fmt.Println("Failed to get MSPID", err)
+		log.Printf("Failed to get MSPID %v", err)
 		return err
 	}
 
-	fmt.Printf("Organisation: %+q\n", mspId)
+	log.Printf("Organisation: %+q\n", mspId)
 
-	fmt.Printf("Downloading: %+q\n", fileName)
+	log.Printf("Downloading: %+q\n", fileName)
 
 	orgNum := getStringInBetween(mspId, "Org", "MSP")
 
@@ -107,7 +109,7 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 
 	file, err := os.Create(baseDir + fileName)
 	if err != nil {
-		fmt.Println("Failed to create file %w", err)
+		log.Printf("Failed to create file %v", err)
 		return err
 	}
 	defer file.Close()
@@ -122,14 +124,14 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 			Key:    key,
 		})
 	if err != nil {
-		fmt.Println("Failed to download file %w", err)
+		log.Printf("Failed to download file %v", err)
 		return err
 	}
 
 	sha256sumCalculated, err := calculateSha256(baseDir + fileName)
 
 	if err != nil {
-		fmt.Println("Failed to calculate checksum %w", err)
+		log.Printf("Failed to calculate checksum %v", err)
 		return err
 	}
 
@@ -139,7 +141,7 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 		}
 	}
 
-	fmt.Println("Downloaded file", file.Name(), numBytes, "bytes")
+	log.Printf("Downloaded file %s % bytes", file.Name(), numBytes)
 
 	return nil
 }

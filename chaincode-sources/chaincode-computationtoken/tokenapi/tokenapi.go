@@ -2,7 +2,7 @@ package tokenapi
 
 import (
 	"encoding/base64"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -88,6 +88,6 @@ func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) 
 
 	creator := base64.StdEncoding.EncodeToString(creatorByte)
 
-	fmt.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
+	log.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
 	return creator == nonceStr, nil
 }

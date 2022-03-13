@@ -29,7 +29,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
 
-	fmt.Printf("[ComputationTokenSmartContract:RequestToken] requesting token: chaincode: %s method: %s args: %s desc: %s directlyExecutable: %s\n", chaincodeName, method, arguments, description, directlyExecutable)
+	log.Printf("[ComputationTokenSmartContract:RequestToken] requesting token: chaincode: %s method: %s args: %s desc: %s directlyExecutable: %s\n", chaincodeName, method, arguments, description, directlyExecutable)
 
 	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
@@ -63,7 +63,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 
 	var inputArgs []tokenapi.Argument
-	err = json.Unmarshal(response.Payload, &inputArgs)
+	err = json.Unmarshal([]byte(arguments), &inputArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 
 	for _, element := range methods {
 		if element.Name == method {
-			if len(element.Args) == len(strings.Split(arguments, ";")) {
+			if len(element.Args) == len(inputArgs) {
 				found = true
 				selectedMethod = element
 				break
@@ -105,7 +105,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, err
 	}
 
-	fmt.Printf("[ComputationTokenSmartContract:RequestToken] token submitted successfully")
+	log.Printf("[ComputationTokenSmartContract:RequestToken] token submitted successfully")
 
 	err = ctx.GetStub().PutState(id, tokenJSON)
 	if err != nil {
@@ -232,14 +232,41 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 
 	log.Printf("Starting computing: %s %+q\n", token.Method, params)
 
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range token.Arguments {
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
+
+	for _, arg := range token.Arguments {
 
 		if arg.Type == "tokenInputs" {
-			//TODO
+			subTokensIds := strings.Split(arg.Value, "|")
+
+			var subTokens []tokenapi.Token
+
+			for _, subTokenId := range subTokensIds {
+
+				log.Printf("Subtoken compute: %s", subTokenId)
+
+				tokenResponse, err := s.Compute(ctx, subTokenId)
+				if err != nil {
+					return nil, err
+				}
+
+				log.Printf("Subtoken compute success")
+
+				subTokens = append(subTokens, *tokenResponse)
+			}
+
+			subTokensJSON, err := json.Marshal(subTokens)
+
+			if err != nil {
+				return nil, err
+			}
+
+			queryArgs = append(queryArgs, subTokensJSON)
+
+		} else {
+			queryArgs = append(queryArgs, []byte(arg.Value))
 		}
 
-		queryArgs[i] = []byte(arg.Value)
 	}
 
 	response := ctx.GetStub().InvokeChaincode("examplealgorithm", queryArgs, "")
@@ -305,23 +332,6 @@ func (s *ComputationTokenSmartContract) GetAllEntriesAdmin(ctx contractapi.Trans
 	}
 
 	return tokens, nil
-}
-
-// Check whether nonce provided in parameter is equal to actual nonce. Can be used to check
-// whether method has been executed by other method/chaincode. We should use this function
-// to forbid users from direct access to algorithm function. Each algorithm should use this
-// function before computation starts
-// Nonce is in fact ctx.GetStub().GetCreator() converted to base64
-func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
-	creatorByte, err := ctx.GetStub().GetCreator()
-	if err != nil {
-		return false, err
-	}
-
-	creator := base64.StdEncoding.EncodeToString(creatorByte)
-
-	fmt.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
-	return creator == nonceStr, nil
 }
 
 // Check if token in valid (only date and time and owner is checked)

@@ -3,6 +3,7 @@ package tokenchaincode
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
@@ -45,7 +46,7 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 
 	var params []string
 
-	fmt.Printf("[ComputationTokenSmartContract:submitToken] submitting token: %s\n", node.MethodName)
+	log.Printf("[ComputationTokenSmartContract:submitToken] submitting token: %s\n", node.MethodName)
 
 	dependentTokenParam := ""
 
