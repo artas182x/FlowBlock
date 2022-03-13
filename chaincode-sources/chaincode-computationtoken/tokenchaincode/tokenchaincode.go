@@ -24,10 +24,12 @@ type ComputationTokenSmartContract struct {
 	contractapi.Contract
 }
 
-// AddEntry issues a new entry to the world state with given details.
-func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string, description string, directlyExecutable bool) (*tokenapi.Token, error) {
+// RequestToken issues a new token to the world state with given details.
+func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string, description string, directlyExecutable string) (*tokenapi.Token, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
+
+	fmt.Printf("[ComputationTokenSmartContract:RequestToken] requesting token: chaincode: %s method: %s args: %s desc: %s directlyExecutable: %s\n", chaincodeName, method, arguments, description, directlyExecutable)
 
 	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
@@ -35,7 +37,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 	timeRequested := time.Unix(int64(timestampRequested.GetSeconds()), int64(timestampRequested.GetNanos())).UTC()
 
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, strconv.FormatInt(timestampRequested.GetSeconds(), 10)})
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, strconv.FormatInt(timestampRequested.GetSeconds(), 10), method, arguments})
 
 	expirationTime := timeRequested.Add(time.Minute * time.Duration(TOKEN_VALID_MINUTES))
 
@@ -98,13 +100,15 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		TimeRequested:      timeRequested,
 		ExpirationTime:     expirationTime,
 		Description:        description,
-		DirectlyExecutable: directlyExecutable,
+		DirectlyExecutable: strings.ToLower(directlyExecutable) == "true",
 	}
 
 	tokenJSON, err := json.Marshal(token)
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("[ComputationTokenSmartContract:RequestToken] token submitted successfully")
 
 	err = ctx.GetStub().PutState(id, tokenJSON)
 	if err != nil {

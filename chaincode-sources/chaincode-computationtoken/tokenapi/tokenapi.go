@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -96,6 +97,74 @@ func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) 
 	return creator == nonceStr, nil
 }
 
+func getS3Session(orgNum string) *session.Session {
+	s3Endpoint := fmt.Sprintf("http://minio%s:9000", orgNum)
+
+	// Configure to use MinIO Server
+	s3Config := &aws.Config{
+		// TODO: Change auth
+		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
+		Endpoint:         aws.String(s3Endpoint),
+		Region:           aws.String("us-east-1"),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	newSession, _ := session.NewSession(s3Config)
+
+	return newSession
+}
+
+// Uploads file to S3 storage
+func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (string, error) {
+	mspId, err := ctx.GetClientIdentity().GetMSPID()
+
+	if err != nil {
+		fmt.Println("Failed to get MSPID %w", err)
+		return "", err
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Errorf("Failed to open file %s %w", filePath, err)
+		return "", err
+	}
+	defer file.Close()
+
+	fmt.Printf("Organisation: %+q\n", mspId)
+
+	orgNum := getStringInBetween(mspId, "Org", "MSP")
+
+	newSession := getS3Session(orgNum)
+
+	uploader := s3manager.NewUploader(newSession)
+
+	bucket := aws.String("input-files")
+
+	fileName := filepath.Base(filePath)
+
+	sha256sumCalculated, err := calculateSha256(filePath)
+
+	s3Key := fmt.Sprintf("%s?%s", fileName, sha256sumCalculated)
+
+	if err != nil {
+		fmt.Println("Failed to calculate checksum %w", err)
+		return "", err
+	}
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: bucket,
+		Key:    aws.String(s3Key),
+		Body:   file,
+	})
+
+	if err != nil {
+		fmt.Println("Failed to upload file to S3 %w", err)
+		return "", err
+	}
+
+	return s3Key, nil
+}
+
 // Downloads file from S3 to given directory
 func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string, sha256sum string, baseDir string) error {
 
@@ -112,24 +181,13 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 
 	orgNum := getStringInBetween(mspId, "Org", "MSP")
 
-	s3Endpoint := fmt.Sprintf("http://minio%s:9000", orgNum)
-
-	// Configure to use MinIO Server
-	s3Config := &aws.Config{
-		// TODO: Change auth
-		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
-		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("us-east-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
-	}
-	newSession, _ := session.NewSession(s3Config)
+	newSession := getS3Session(orgNum)
 
 	os.MkdirAll(baseDir, 0755)
 
 	file, err := os.Create(baseDir + fileName)
 	if err != nil {
-		fmt.Println("Failed to create file", err)
+		fmt.Println("Failed to create file %w", err)
 		return err
 	}
 	defer file.Close()
@@ -144,14 +202,14 @@ func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string
 			Key:    key,
 		})
 	if err != nil {
-		fmt.Println("Failed to download file", err)
+		fmt.Println("Failed to download file %w", err)
 		return err
 	}
 
 	sha256sumCalculated, err := calculateSha256(baseDir + fileName)
 
 	if err != nil {
-		fmt.Println("Failed to calculate checksum", err)
+		fmt.Println("Failed to calculate checksum %w", err)
 		return err
 	}
 

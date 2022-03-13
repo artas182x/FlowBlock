@@ -9,10 +9,15 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
+// Request a workflowflow (list of tasks that can be depedent on each other)
 func (s *ComputationTokenSmartContract) RequestFlow(ctx contractapi.TransactionContextInterface, tokenJSON string) (*tokenapi.Flow, error) {
 	var flow tokenapi.Flow
 
-	json.Unmarshal([]byte(tokenJSON), &flow)
+	err := json.Unmarshal([]byte(tokenJSON), &flow)
+
+	if err != nil {
+		return nil, err
+	}
 
 	firstNode, err := getNodeWithoutOuput(&flow)
 	firstNode.DirectlyExecutable = true
@@ -31,6 +36,7 @@ func (s *ComputationTokenSmartContract) RequestFlow(ctx contractapi.TransactionC
 
 }
 
+// Submit token to world state
 func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionContextInterface, node *tokenapi.Node, flow *tokenapi.Flow) (string, error) {
 
 	if node.TokenId != "" {
@@ -39,13 +45,13 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 
 	var params []string
 
-	fmt.Printf("submitting token: %s\n", node.MethodName)
+	fmt.Printf("[ComputationTokenSmartContract:submitToken] submitting token: %s\n", node.MethodName)
 
 	dependentTokenParam := ""
 
 	for _, intf := range node.Interfaces {
 		if strings.HasPrefix(intf.Name, "Input") {
-			node, err := findDependentNode(intf.ID, flow)
+			node, err := findParentNode(intf.ID, flow)
 			node.DirectlyExecutable = false
 
 			if err != nil {
@@ -89,7 +95,13 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 		}
 	}
 
-	token, err := s.RequestToken(ctx, node.ChaincodeName, node.MethodName, argsString, description, node.DirectlyExecutable)
+	directlyExecutableStr := "false"
+
+	if node.DirectlyExecutable {
+		directlyExecutableStr = "true"
+	}
+
+	token, err := s.RequestToken(ctx, node.ChaincodeName, node.MethodName, argsString, description, directlyExecutableStr)
 
 	if err != nil {
 		return "", err
@@ -101,6 +113,7 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 
 }
 
+// Finds a node that has output connected with noting. It will mean that it is the last node that produces result
 func getNodeWithoutOuput(flow *tokenapi.Flow) (*tokenapi.Node, error) {
 
 	var foundNode *tokenapi.Node
@@ -125,6 +138,7 @@ func getNodeWithoutOuput(flow *tokenapi.Flow) (*tokenapi.Node, error) {
 	return foundNode, nil
 }
 
+// Gets connection where specified output is
 func getOutputConnection(connections *[]tokenapi.Connection, outputId string) *tokenapi.Connection {
 	for _, connection := range *connections {
 		if outputId == connection.From {
@@ -135,7 +149,8 @@ func getOutputConnection(connections *[]tokenapi.Connection, outputId string) *t
 	return nil
 }
 
-func findDependentNode(nodeId string, flow *tokenapi.Flow) (*tokenapi.Node, error) {
+// Find a parent node of specified node
+func findParentNode(nodeId string, flow *tokenapi.Flow) (*tokenapi.Node, error) {
 
 	dependentNodeId := ""
 
