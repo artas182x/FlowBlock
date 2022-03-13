@@ -1,26 +1,22 @@
 package tokenapi
 
 import (
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 // In debug mode for example file checksums are skipped, because example data contains invalid ones
 const DEBUG_MODE = true
+
+const TOKEN_VALID_MINUTES = 10
 
 type Method struct {
 	Name        string `json:"name"`
@@ -97,157 +93,106 @@ func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) 
 	return creator == nonceStr, nil
 }
 
-func getS3Session(orgNum string) *session.Session {
-	s3Endpoint := fmt.Sprintf("http://minio%s:9000", orgNum)
-
-	// Configure to use MinIO Server
-	s3Config := &aws.Config{
-		// TODO: Change auth
-		Credentials:      credentials.NewStaticCredentials("admin", "adminadmin", ""),
-		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("us-east-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
+// Compute method launches alghoritm provided it has correct token
+func Compute(ctx contractapi.TransactionContextInterface, id string) (*Token, error) {
+	decodedId, err := base64.URLEncoding.DecodeString(id)
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
 	}
-	newSession, _ := session.NewSession(s3Config)
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
+	if err != nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to read from world state: %v", err)
+	}
+	if tokenJSON == nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token %s does not exist", id)
+	}
 
-	return newSession
+	var token Token
+	err = json.Unmarshal(tokenJSON, &token)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenValid, err := isTokenValid(ctx, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tokenValid {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: token is invalid")
+	}
+
+	nonce_byte, _ := ctx.GetStub().GetCreator()
+	nonce := base64.StdEncoding.EncodeToString(nonce_byte)
+
+	params := []string{token.Method, nonce}
+
+	args := strings.Split(token.Arguments, ";")
+	for _, arg := range args {
+		params = append(params, strings.Split(arg, ":")[0])
+	}
+
+	log.Printf("Starting computing: %s %+q\n", token.Method, params)
+
+	queryArgs := make([][]byte, len(params))
+	for i, arg := range params {
+		queryArgs[i] = []byte(arg)
+	}
+
+	response := ctx.GetStub().InvokeChaincode("examplealgorithm", queryArgs, "")
+
+	if response.Status != shim.OK {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:Compute: failed to query chaincode. Status: %d Payload: %s Message: %s", response.Status, response.Payload, response.Message)
+	}
+
+	var ret Ret
+	err = json.Unmarshal(response.Payload, &ret)
+	if err != nil {
+		return nil, err
+	}
+
+	token.Ret = ret
+
+	tokenJSON, err = json.Marshal(token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.GetStub().PutState(string(decodedId), tokenJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Finished computing: %s %+q\n", token.Method, params)
+
+	return &token, nil
 }
 
-// Uploads file to S3 storage
-func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (string, error) {
-	mspId, err := ctx.GetClientIdentity().GetMSPID()
-
+// ReadToken returns the token entry stored in the world state with given id.
+func ReadToken(ctx contractapi.TransactionContextInterface, id string) (*Token, error) {
+	decodedId, err := base64.URLEncoding.DecodeString(id)
 	if err != nil {
-		fmt.Println("Failed to get MSPID %w", err)
-		return "", err
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to decode ID: %v", err)
 	}
-
-	file, err := os.Open(filePath)
+	tokenJSON, err := ctx.GetStub().GetState(string(decodedId))
 	if err != nil {
-		fmt.Errorf("Failed to open file %s %w", filePath, err)
-		return "", err
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: failed to read from world state: %v", err)
 	}
-	defer file.Close()
+	if tokenJSON == nil {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: token %s does not exist", id)
+	}
 
-	fmt.Printf("Organisation: %+q\n", mspId)
-
-	orgNum := getStringInBetween(mspId, "Org", "MSP")
-
-	newSession := getS3Session(orgNum)
-
-	uploader := s3manager.NewUploader(newSession)
-
-	bucket := aws.String("input-files")
-
-	fileName := filepath.Base(filePath)
-
-	sha256sumCalculated, err := calculateSha256(filePath)
-
-	s3Key := fmt.Sprintf("%s?%s", fileName, sha256sumCalculated)
-
+	var token Token
+	err = json.Unmarshal(tokenJSON, &token)
 	if err != nil {
-		fmt.Println("Failed to calculate checksum %w", err)
-		return "", err
+		return nil, err
 	}
 
-	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: bucket,
-		Key:    aws.String(s3Key),
-		Body:   file,
-	})
-
-	if err != nil {
-		fmt.Println("Failed to upload file to S3 %w", err)
-		return "", err
+	x509, _ := cid.GetX509Certificate(ctx.GetStub())
+	if token.UserRequested != x509.Subject.ToRDNSequence().String() {
+		return nil, fmt.Errorf("ComputationTokenSmartContract:ReadToken: set not a owner of this token")
 	}
 
-	return s3Key, nil
-}
-
-// Downloads file from S3 to given directory
-func DownloadFromS3(ctx contractapi.TransactionContextInterface, fileName string, sha256sum string, baseDir string) error {
-
-	mspId, err := ctx.GetClientIdentity().GetMSPID()
-
-	if err != nil {
-		fmt.Println("Failed to get MSPID", err)
-		return err
-	}
-
-	fmt.Printf("Organisation: %+q\n", mspId)
-
-	fmt.Printf("Downloading: %+q\n", fileName)
-
-	orgNum := getStringInBetween(mspId, "Org", "MSP")
-
-	newSession := getS3Session(orgNum)
-
-	os.MkdirAll(baseDir, 0755)
-
-	file, err := os.Create(baseDir + fileName)
-	if err != nil {
-		fmt.Println("Failed to create file %w", err)
-		return err
-	}
-	defer file.Close()
-
-	bucket := aws.String("input-files")
-	key := aws.String(fileName)
-
-	downloader := s3manager.NewDownloader(newSession)
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: bucket,
-			Key:    key,
-		})
-	if err != nil {
-		fmt.Println("Failed to download file %w", err)
-		return err
-	}
-
-	sha256sumCalculated, err := calculateSha256(baseDir + fileName)
-
-	if err != nil {
-		fmt.Println("Failed to calculate checksum %w", err)
-		return err
-	}
-
-	if sha256sum != sha256sumCalculated {
-		if !DEBUG_MODE {
-			return fmt.Errorf("security error: Invalid checksum")
-		}
-	}
-
-	fmt.Println("Downloaded file", file.Name(), numBytes, "bytes")
-
-	return nil
-}
-
-func calculateSha256(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	hash := sha256.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(hash.Sum(nil)), nil
-}
-
-func getStringInBetween(str string, start string, end string) (result string) {
-	s := strings.Index(str, start)
-	if s == -1 {
-		return
-	}
-	s += len(start)
-	e := strings.Index(str[s:], end)
-	if e == -1 {
-		return
-	}
-	e += s + e - 1
-	return str[s:e]
+	return &token, nil
 }
