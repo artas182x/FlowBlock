@@ -1,7 +1,11 @@
 package tokenapi
 
 import (
+	"encoding/base64"
+	"fmt"
 	"time"
+
+	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 // In debug mode for example file checksums are skipped, because example data contains invalid ones
@@ -69,4 +73,21 @@ type Node struct {
 type Flow struct {
 	Nodes       []Node       `json:"nodes"`
 	Connections []Connection `json:"connections"`
+}
+
+// Check whether nonce provided in parameter is equal to actual nonce. Can be used to check
+// whether method has been executed by other method/chaincode. We should use this function
+// to forbid users from direct access to algorithm function. Each algorithm should use this
+// function before computation starts
+// Nonce is in fact ctx.GetStub().GetCreator() converted to base64
+func IsNonceValid(ctx contractapi.TransactionContextInterface, nonceStr string) (bool, error) {
+	creatorByte, err := ctx.GetStub().GetCreator()
+	if err != nil {
+		return false, err
+	}
+
+	creator := base64.StdEncoding.EncodeToString(creatorByte)
+
+	fmt.Printf("tokenapi:isNonceValid: Comparing GetCreator(): %s vs nonce: %s\n", creator, nonceStr)
+	return creator == nonceStr, nil
 }
