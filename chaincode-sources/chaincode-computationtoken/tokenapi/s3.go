@@ -66,7 +66,7 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 
 	sha256sumCalculated, err := calculateSha256(filePath)
 
-	s3Key := fmt.Sprintf("%s?%s", fileName, sha256sumCalculated)
+	namePlusSum := fmt.Sprintf("%s?%s", fileName, sha256sumCalculated)
 
 	if err != nil {
 		log.Printf("Failed to calculate checksum %v", err)
@@ -75,7 +75,7 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: bucket,
-		Key:    aws.String(s3Key),
+		Key:    aws.String(fileName),
 		Body:   file,
 	})
 
@@ -84,7 +84,7 @@ func UploadToS3(ctx contractapi.TransactionContextInterface, filePath string) (s
 		return "", err
 	}
 
-	return s3Key, nil
+	return namePlusSum, nil
 }
 
 // Downloads file from S3 to given directory
