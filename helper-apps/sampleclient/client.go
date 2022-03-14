@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
@@ -25,11 +26,6 @@ type Token struct {
 func main() {
 	log.Println("============ application-golang starts ============")
 
-	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
-	if err != nil {
-		log.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
-	}
-
 	wallet, err := gateway.NewFileSystemWallet("wallet")
 	if err != nil {
 		log.Fatalf("Failed to create wallet: %v", err)
@@ -43,6 +39,7 @@ func main() {
 	}
 
 	ccpPath := filepath.Join(
+		"..",
 		"..",
 		"network",
 		"organizations",
@@ -60,10 +57,10 @@ func main() {
 	}
 	defer gw.Close()
 
-	network, err := gw.GetNetwork("medicalsystem")
+	/*network, err := gw.GetNetwork("medicalsystem")
 	if err != nil {
 		log.Fatalf("Failed to get network: %v", err)
-	}
+	}*/
 
 	//contract := network.GetContractWithName("medicaldata", "PatientSmartContract")
 
@@ -75,13 +72,24 @@ func main() {
 	log.Println(string(result))
 	*/
 
-	contract := network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
-	log.Println("--> Evaluate Transaction: GetAllEntriesAdmin")
-	result, err := contract.EvaluateTransaction("GetAllEntriesAdmin")
+	b, err := ioutil.ReadFile("example.json")
+
+	tokenValsStr := string(b)
+
+	var tokenVals *[]tokenapi.Token
+
+	log.Printf("%s", tokenValsStr)
+
+	err = json.Unmarshal([]byte(tokenValsStr), tokenVals)
+
+	/*contract := network.GetContractWithName("computationtoken", "ComputationTokenSmartContract")
+	log.Println("--> Evaluate Transaction: ReadToken")
+	result, err := contract.EvaluateTransaction("ReadToken", "AHRva2VucwB0b2tlbnMAQ049b3JnMWFkbWluLE9VPWFkbWluLE89SHlwZXJsZWRnZXIsU1Q9Tm9ydGggQ2Fyb2xpbmEsQz1VUwAxNjQ3MTc2NzYxAEV4YW1wbGVBbGdvcml0aG1TbWFydENvbnRyYWN0OlhSYXlQbmV1bW9uaWFDYXNlcwAxNTc3ODgzODQwOzE1ODA0NzU5MDAA")
 	if err != nil {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
 	}
 	log.Println(string(result))
+	*/
 
 	/*
 		contract = network.GetContractWithName("medicaldata", "MedicalDataSmartContract")
@@ -144,6 +152,7 @@ func main() {
 func populateWallet(wallet *gateway.Wallet) error {
 	log.Println("============ Populating wallet ============")
 	credPath := filepath.Join(
+		"..",
 		"..",
 		"network",
 		"organizations",

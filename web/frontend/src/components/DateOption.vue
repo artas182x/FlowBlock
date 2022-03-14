@@ -40,7 +40,7 @@ export default defineComponent({
   },
   methods: {
      listeners(event) {
-       return this.$emit("input", Math.round(event/1000));
+       return this.$emit("input", '' + Math.round(event/1000));
     }
   }
 

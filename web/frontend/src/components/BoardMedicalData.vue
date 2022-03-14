@@ -57,7 +57,7 @@ export default {
             display:  (row) => {
 
               return (
-                  '<button type="button" data-id="' +
+                  '<button type="button" title="Copy ID to clipboard" data-id="' +
                   row.ID +
                   '" class="is-rows-el copy-btn btn btn-light">&#x1f4cb;</button>'
               );
@@ -81,7 +81,7 @@ export default {
                 return ('<div style="margin-left: 10px;">' + row.MedicalEntryValue + "")
               } else {
                 return (
-                    '<button type="button" data-id="' +
+                    '<button type="button" title="Download asset" data-id="' +
                     row.MedicalEntryValue +
                     '" class="is-rows-el download-btn btn btn-light">&#128229;</button>'
                 );
@@ -135,7 +135,7 @@ export default {
               const fileLink = document.createElement('a');
 
               fileLink.href = fileURL;
-              fileLink.setAttribute('download', element.getAttribute("data-id"));
+              fileLink.setAttribute('download', element.getAttribute("data-id").split("?")[0]);
               document.body.appendChild(fileLink);
 
               fileLink.click();

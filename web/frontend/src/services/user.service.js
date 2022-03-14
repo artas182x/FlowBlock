@@ -21,6 +21,9 @@ class UserService {
   requestToken(input) {
     return axios.post(config.BASE_API_URL + 'v1/computation/requesttoken', input, { headers: authHeader() });
   }
+  requestFlow(input) {
+    return axios.post(config.BASE_API_URL + 'v1/computation/requestflow', input, { headers: authHeader() });
+  }
   downloadFile(fileName) {
     return axios.get(config.BASE_API_URL + 'v1/s3/' + fileName, { headers: authHeader(), responseType: 'blob' });
   }

@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/nfnt/resize"
+	"github.com/wcharczuk/go-chart/v2"
 )
 
 type ExampleAlgorithmSmartContract struct {
@@ -33,39 +35,39 @@ const BASE_DIRECTORY = "/tmp/exalg/"
 var METHODS = []tokenapi.Method{
 	{
 		Name:        "ExampleAlgorithmSmartContract:AvgBloodPreasure",
-		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
+		Args:        []tokenapi.Argument{{Name: "patientID", Type: "string"}, {Name: "startDateTimestamp", Type: "ts"}, {Name: "endDateTimestamp", Type: "ts"}},
 		RetType:     "float32",
 		Description: "Calculates average value of blood preasure",
 	},
 	{
 		Name:        "ExampleAlgorithmSmartContract:MaxHeartRate",
-		Args:        "patientID:string;startDateTimestamp:ts;endDateTimestamp:ts",
+		Args:        []tokenapi.Argument{{Name: "patientID", Type: "string"}, {Name: "startDateTimestamp", Type: "ts"}, {Name: "endDateTimestamp", Type: "ts"}},
 		RetType:     "int64",
 		Description: "Calculates maximum value of heart rate",
 	},
 	{
 		Name:        "ExampleAlgorithmSmartContract:LongRunningMethod",
-		Args:        "patientID:string",
+		Args:        []tokenapi.Argument{{Name: "patientID", Type: "string"}},
 		RetType:     "int64",
 		Description: "Sleeps and returns 0 is there was no error",
 	},
 	{
 		Name:        "ExampleAlgorithmSmartContract:PneumoniaImageClassification",
-		Args:        "medicalEntryId:string",
+		Args:        []tokenapi.Argument{{Name: "medicalEntryId", Type: "string"}},
 		RetType:     "string",
 		Description: "Runs pneumonia image classification on specified medical entry id",
 	},
 	{
 		Name:        "ExampleAlgorithmSmartContract:XRayPneumoniaCases",
-		Args:        "startDateTimestamp:ts;endDateTimestamp:ts",
+		Args:        []tokenapi.Argument{{Name: "startDateTimestamp", Type: "ts"}, {Name: "endDateTimestamp", Type: "ts"}},
 		RetType:     "int64",
 		Description: "Calculates number of pneumonia cases over time based on XRay images",
 	},
 	{
-		Name:        "ExampleAlgorithmSmartContract:CreateChart",
-		Args:        "tokenIds:tokenInputs",
-		RetType:     "string",
-		Description: "Creates simple chart basign on values from other computation algorithms",
+		Name:        "ExampleAlgorithmSmartContract:CreateBarChart",
+		Args:        []tokenapi.Argument{{Name: "tokenIds", Type: "tokenInputs"}, {Name: "title", Type: "string"}},
+		RetType:     "s3img",
+		Description: "Creates simple bar chart basign on values from other computation algorithms",
 	},
 }
 
@@ -150,7 +152,7 @@ func convertColor(value uint32) float32 {
 }
 
 func getImageFromFilePath(filePath string) (image.Image, error) {
-	fmt.Printf("Opening image: %+q\n", filePath)
+	log.Printf("Opening image: %+q\n", filePath)
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -188,11 +190,11 @@ func classifyPneumonia(ctx contractapi.TransactionContextInterface, imageFilenam
 		return 0.0, err
 	}
 
-	fmt.Printf("Resizing image\n")
+	log.Printf("Resizing image\n")
 
 	img = resize.Resize(150, 150, img, resize.Lanczos3)
 
-	fmt.Printf("Image to tensor\n")
+	log.Printf("Image to tensor\n")
 
 	tensor, err := imageToTensor(img)
 
@@ -200,7 +202,7 @@ func classifyPneumonia(ctx contractapi.TransactionContextInterface, imageFilenam
 		return 0.0, err
 	}
 
-	fmt.Printf("Loading model\n")
+	log.Printf("Loading model\n")
 
 	model := tg.LoadModel(baseDir+"model", []string{"serve"}, nil)
 
@@ -227,12 +229,9 @@ func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contrac
 	}
 
 	params := []string{"MedicalDataSmartContract:ReadMedicalEntry", string(medicalEntryIdDecoded), nonce}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
-	fmt.Printf("Starting computing: %+q\n", params)
+	log.Printf("Starting computing: %+q\n", params)
 
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
@@ -255,7 +254,7 @@ func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contrac
 
 	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTORY, rand.Intn(100000))
 
-	fmt.Printf("Cleanup: %+q\n", baseDir)
+	log.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
 
 	err = downloadPneumoniaModel(ctx, baseDir)
@@ -269,7 +268,7 @@ func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contrac
 	fileName := medicalEntryVals[0]
 	checksum := medicalEntryVals[1]
 
-	fmt.Printf("Classifying: %+q\n", fileName)
+	log.Printf("Classifying: %+q\n", fileName)
 	result, err := classifyPneumonia(ctx, fileName, checksum, baseDir)
 	if err != nil {
 		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
@@ -290,12 +289,9 @@ func (s *ExampleAlgorithmSmartContract) PneumoniaImageClassification(ctx contrac
 func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.TransactionContextInterface, nonce string, startDateTimestamp string, endDateTimestamp string) (*tokenapi.Ret, error) {
 
 	params := []string{"MedicalDataSmartContract:GetMedicalEntries", "ChestXRay", startDateTimestamp, endDateTimestamp, nonce}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
-	fmt.Printf("Starting computing: %+q\n", params)
+	log.Printf("Starting computing: %+q\n", params)
 
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
@@ -313,7 +309,7 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 
 	var baseDir = fmt.Sprintf("%s%d/", BASE_DIRECTORY, rand.Intn(100000))
 
-	fmt.Printf("Cleanup: %+q\n", baseDir)
+	log.Printf("Cleanup: %+q\n", baseDir)
 	os.RemoveAll(baseDir)
 
 	err = downloadPneumoniaModel(ctx, baseDir)
@@ -329,7 +325,7 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 		medicalEntryVals := strings.Split(arg.MedicalEntryValue, "?")
 		fileName := medicalEntryVals[0]
 		checksum := medicalEntryVals[1]
-		fmt.Printf("Classifying: %+q\n", fileName)
+		log.Printf("Classifying: %+q\n", fileName)
 		result, err := classifyPneumonia(ctx, fileName, checksum, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}
@@ -346,10 +342,7 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 
 func addMedicalValue(ctx contractapi.TransactionContextInterface, patientID string, medicalEntryName string, medicalEntryType string, medicalEntryValue string, nonce string) error {
 	params := []string{"MedicalDataSmartContract:AddMedicalEntry", patientID, medicalEntryName, medicalEntryType, medicalEntryValue, nonce}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
@@ -374,12 +367,9 @@ func (s *ExampleAlgorithmSmartContract) AvgBloodPreasure(ctx contractapi.Transac
 	}
 
 	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "SystolicBloodPreasure", startDateTimestamp, endDateTimestamp, nonce}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
-	fmt.Printf("Starting computing: %+q\n", params)
+	log.Printf("Starting computing: %+q\n", params)
 
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
@@ -434,12 +424,9 @@ func (s *ExampleAlgorithmSmartContract) MaxHeartRate(ctx contractapi.Transaction
 	}
 
 	params := []string{"MedicalDataSmartContract:GetPatientMedicalEntries", patientID, "HeartRate", startDateTimestamp, endDateTimestamp, nonce}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
-	fmt.Printf("Starting computing: %+q\n", params)
+	log.Printf("Starting computing: %+q\n", params)
 
 	response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
 
@@ -501,8 +488,8 @@ func (s *ExampleAlgorithmSmartContract) LongRunningMethod(ctx contractapi.Transa
 	return &ret, nil
 }
 
-// Calculates average blood preasure for given patient and data range
-func (s *ExampleAlgorithmSmartContract) CreateChart(ctx contractapi.TransactionContextInterface, nonce string, tokenIds string) (*tokenapi.Ret, error) {
+// Creates bar chart on data from other computations
+func (s *ExampleAlgorithmSmartContract) CreateBarChart(ctx contractapi.TransactionContextInterface, nonce string, tokenValsStr string, title string) (*tokenapi.Ret, error) {
 
 	isNonceValid, err := tokenapi.IsNonceValid(ctx, nonce)
 	if err != nil {
@@ -514,32 +501,21 @@ func (s *ExampleAlgorithmSmartContract) CreateChart(ctx contractapi.TransactionC
 		return &ret, nil
 	}
 
-	vals := make(map[string]float32)
+	var tokenVals []tokenapi.Token
 
-	tokenIdSlice := strings.Split(tokenIds, "|")
+	err = json.Unmarshal([]byte(tokenValsStr), &tokenVals)
 
-	for _, tokenId := range tokenIdSlice {
-		params := []string{"ComputationTokenSmartContract:ReadToken", tokenId}
-		queryArgs := make([][]byte, len(params))
-		for i, arg := range params {
-			queryArgs[i] = []byte(arg)
-		}
+	if err != nil {
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Can't parse tokens JSON"), RetType: "string"}
+		return &ret, nil
+	}
 
-		fmt.Printf("Reading token: %+q\n", tokenId)
+	var bars []chart.Value
 
-		response := ctx.GetStub().InvokeChaincode("medicaldata", queryArgs, "")
+	for _, token := range tokenVals {
 
-		if response.Status != shim.OK {
-			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't read data from Blockchain"), RetType: "string"}
-			return &ret, nil
-		}
-
-		var token tokenapi.Token
-		err = json.Unmarshal(response.Payload, &token)
-		if err != nil {
-			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain"), RetType: "string"}
-			return &ret, nil
-		}
+		desc := token.Description
+		var val float64
 
 		if token.Ret.RetType == "int64" {
 			intVar, err := strconv.Atoi(token.Ret.RetValue)
@@ -547,31 +523,62 @@ func (s *ExampleAlgorithmSmartContract) CreateChart(ctx contractapi.TransactionC
 				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->int64)"), RetType: "string"}
 				return &ret, nil
 			}
-			vals[tokenId] = float32(intVar)
+			val = float64(intVar)
 		} else if token.Ret.RetType == "float32" {
 			floatVar, err := strconv.ParseFloat(token.Ret.RetValue, 32)
 			if err != nil {
 				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->float32)"), RetType: "string"}
 				return &ret, nil
 			}
-			vals[tokenId] = float32(floatVar)
+			val = float64(floatVar)
 		} else if token.Ret.RetType == "float64" {
 			floatVar, err := strconv.ParseFloat(token.Ret.RetValue, 64)
 			if err != nil {
 				ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't parse data from Blockchain (cast from str->float64)"), RetType: "string"}
 				return &ret, nil
 			}
-			vals[tokenId] = float32(floatVar)
+			val = float64(floatVar)
 		} else {
-			ret := tokenapi.Ret{RetValue: fmt.Sprintf("Error: unsupported token value (id: %s)\n", tokenId), RetType: "string"}
+			ret := tokenapi.Ret{RetValue: fmt.Sprintf("Error: unsupported token value (id: %s)\n", token.ID), RetType: "string"}
 			return &ret, nil
 		}
 
+		bars = append(bars, chart.Value{Value: val, Label: desc})
 	}
 
-	jsonStr, err := json.Marshal(vals)
+	graph := chart.BarChart{
+		Title: title,
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top: 40,
+			},
+		},
+		Height:   512,
+		BarWidth: 60,
+		Bars:     bars,
+	}
 
-	ret := tokenapi.Ret{RetValue: string(jsonStr), RetType: "string"}
+	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: can't get tx timestamp"), RetType: "string"}
+		return &ret, nil
+	}
+
+	fileName := fmt.Sprintf("%s_%d.png", strings.ReplaceAll(title, " ", "_"), timestampRequested.GetSeconds())
+
+	f, _ := os.Create(BASE_DIRECTORY + fileName)
+	graph.Render(chart.PNG, f)
+	f.Close()
+
+	fileId, err := tokenapi.UploadToS3(ctx, BASE_DIRECTORY+fileName)
+
+	if err != nil {
+		log.Printf("Upload to S3 failed: %v", err)
+		ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: uploading to S3 failed"), RetType: "string"}
+		return &ret, nil
+	}
+
+	ret := tokenapi.Ret{RetValue: fileId, RetType: "s3img"}
 
 	return &ret, nil
 }

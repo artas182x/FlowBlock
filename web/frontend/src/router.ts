@@ -1,5 +1,4 @@
 import { createWebHistory, createRouter } from "vue-router";
-import Home from "./components/Home.vue";
 import Login from "./components/Login.vue";
 
 // lazy-loaded
@@ -11,12 +10,8 @@ const BoardMedicalData = () => import("./components/BoardMedicalData.vue")
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: Home,
-  },
-  {
-    path: "/home",
-    component: Home,
+    name: "computations",
+    component: BoardComputations,
   },
   {
     path: "/login",

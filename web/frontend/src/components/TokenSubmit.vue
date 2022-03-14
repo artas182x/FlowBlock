@@ -1,8 +1,9 @@
 <template>
   <div class="jumbotron">
     <h1 class="display-4">
-      Token submit
+      Workflow designer
     </h1>
+    <p>Click right button on board to start designing</p>
   </div>
 
   <div
@@ -15,102 +16,67 @@
 
   <button
     type="button"
-    class="btn btn-primary"
+    class="btn btn-primary "
     @click="save()"
   >
     Save
   </button>
 
-  <div style="height: 100vh; width: 100vw">
+  <div style="height: 70vh; width: 100%" class="form-group form-row col-md-4">
     <hint-overlay />
     <baklava-editor :plugin="viewPlugin" />
   </div>
 
-  <div class="form-group form-row col-md-4">
-    <label>Chaincode: </label>
-    <select
-      v-model="chainCodeNameSelected"
-      class="form-select"
-      @change="onChainCodeChange()"
-    >
-      <option
-        v-for="chainCode in chainCodes"
-        :key="chainCode.value"
-        :value="chainCode.value"
-      >
-        {{ chainCode.text }}
-      </option>
-    </select>
-  </div>
-
-  <div class="form-group form-row col-md-4">
-    <label>Method: </label>
-    <select
-      v-model="methodSelected"
-      class="form-select"
-    >
-      <option
-        v-for="method in methods"
-        :key="method.Name"
-        :value="method"
-      >
-        {{ method.Name }}
-      </option>
-    </select>
-    <p>{{ methodSelected.Description }}</p>
-  </div>
-
-  <div
-    v-for="argument in methodSelected.Arguments"
-    :key="argument"
-    class="form-group form-row col-md-2"
-  >
-    <label>{{ argument.Name }}</label>
-    <input
-      v-if="argument.Type === 'string'"
-      v-model="argument.Value"
-      class="form-text"
-    >
-    <datepicker
-      v-if="argument.Type === 'ts'"
-      v-model="argument.Value"
-    />
-  </div>
-
-  <button
-    type="button"
-    :disabled="isSubmitDisabled()"
-    class="btn btn-primary"
-    @click="submit()"
-  >
-    Submit
-  </button>
 </template>
+
+<style>
+.node-editor .background {
+  background-color: #fafafa;
+}
+
+.node {
+  background: #212121;
+}
+
+.dark-input {
+  background-color: #ffffff;
+  color: #484848;
+
+}
+
+.dark-input:hover {
+  background-color: #d6d6d7;
+}
+
+.dark-context-menu {
+  background: #212121;
+}
+
+.connection {
+  stroke: #593196;
+}
+
+</style>
 
 
 <script>
 import userService from "@/services/user.service";
-import Datepicker from 'vue3-datepicker'
 import {Editor} from "@baklavajs/core";
 import {ViewPlugin} from "@baklavajs/plugin-renderer-vue3";
 import {InputOption, OptionPlugin} from "@baklavajs/plugin-options-vue3";
 import {ComputeBlockBuilder} from "@/components/ComputeBlockBuilder";
 import DateOption from "@/components/DateOption";
 import MetadataOption from "@/components/MetadataOption";
-import TokenNode from "@/components/TokenNode.ts";
 import AddOption from "@/components/AddOption.vue";
 
 export default {
   name: "TokenSubmit",
-  components: { Datepicker },
+  components: {  },
   data: () => ({
     errors: [],
     chainCodeNameSelected: "",
     chainCodes: [
       { text: 'Example algorithm', value: 'examplealgorithm' },
-    ],
-    methodSelected: {"Name": "", "Description": "", "RetType": "", "Arguments": []},
-    methods: [
     ],
     editor: new Editor(),
     viewPlugin: new ViewPlugin()
@@ -161,60 +127,21 @@ export default {
     }
   },
   methods: {
-    isSubmitDisabled() {
-      return this.methodSelected.Name === "" || this.chainCodeNameSelected === ""
-    },
-    onChainCodeChange() {
-      this.methods = []
-      userService.getAvailableMethods(this.chainCodeNameSelected).then(
-          (response) => {
-            let methods = response.data
-            methods.forEach(method => {
-              method.Arguments.forEach(arg => {
-                if (arg.Type === "ts") {
-                  arg.Value = new Date();
-                } else {
-                  arg.Value = ""
-                }
-              })
-              this.methods.push(method)
-            })
+    save() {
+      const state = JSON.stringify(this.editor.save());
+      console.log(state);
+      userService.requestFlow(state).then(
+          () => {
+            this.$router.push('/computations');
           },
           (error) => {
             if (error.response.status === 401) {
               this.logOut()
+            } else {
+              this.errors.push("Error during submitting a request")
             }
           }
-      );
-    },
-    save() {
-      const state = JSON.stringify(this.editor.save());
-      console.log("onSaveButtonClick:", state);
-    },
-    submit() {
-        let argumentsFlat = []
-        this.errors = []
-        this.methodSelected.Arguments.forEach(arg => {
-          if (arg.Type === "ts") {
-            argumentsFlat.push('' + Math.round(arg.Value/1000))
-          } else {
-            argumentsFlat.push(arg.Value)
-          }
-
-        })
-        let request = {"arguments": argumentsFlat, "chaincodeName": this.chainCodeNameSelected, "method": this.methodSelected.Name}
-        userService.requestToken(request).then(
-            () => {
-              this.$router.push('/computations');
-            },
-            (error) => {
-              if (error.response.status === 401) {
-                this.logOut()
-              } else {
-                this.errors.push("Error during submitting a request")
-              }
-            }
-        )
+      )
     },
     logOut() {
       this.$store.dispatch('auth/logout');

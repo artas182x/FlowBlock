@@ -20,18 +20,10 @@
           class="collapse navbar-collapse"
       >
         <a
-            class="navbar-brand"
+            class="navbar-brand mt-2 mt-lg-0"
             href="#"
-        >Blockchain data processor</a>
+        >BlockFlow</a>
         <ul class="navbar-nav me-auto mt-2 mt-lg-0">
-          <li class="nav-item">
-            <router-link
-                to="/home"
-                class="nav-link"
-            >
-              <font-awesome-icon icon="home" /> Home
-            </router-link>
-          </li>
           <li
               v-if="showComputationBoard"
               class="nav-item"
