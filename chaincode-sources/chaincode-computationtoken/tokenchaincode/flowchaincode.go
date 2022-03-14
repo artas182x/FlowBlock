@@ -20,17 +20,19 @@ func (s *ComputationTokenSmartContract) RequestFlow(ctx contractapi.TransactionC
 		return nil, err
 	}
 
-	firstNode, err := getNodeWithoutOuput(&flow)
-	firstNode.DirectlyExecutable = true
+	firstNodes, err := getNodesWithoutOuput(&flow)
 
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = s.submitToken(ctx, firstNode, &flow)
+	for i := range firstNodes {
+		firstNodes[i].DirectlyExecutable = true
+		_, err = s.submitToken(ctx, firstNodes[i], &flow)
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &flow, nil
@@ -118,28 +120,23 @@ func (s *ComputationTokenSmartContract) submitToken(ctx contractapi.TransactionC
 }
 
 // Finds a node that has output connected with noting. It will mean that it is the last node that produces result
-func getNodeWithoutOuput(flow *tokenapi.Flow) (*tokenapi.Node, error) {
+func getNodesWithoutOuput(flow *tokenapi.Flow) ([]*tokenapi.Node, error) {
 
-	var foundNode *tokenapi.Node
+	var foundNodes []*tokenapi.Node
 
-	for nodeId, _ := range flow.Nodes {
+	for nodeId := range flow.Nodes {
 		for _, intf := range flow.Nodes[nodeId].Interfaces {
 
 			if strings.HasPrefix(intf.Name, "Output") {
 				conn := getOutputConnection(&flow.Connections, intf.ID)
 				if conn == nil {
-
-					if foundNode != nil {
-						return nil, fmt.Errorf("there can't be 2 nodes without connected output")
-					}
-
-					foundNode = &flow.Nodes[nodeId]
+					foundNodes = append(foundNodes, &flow.Nodes[nodeId])
 				}
 			}
 
 		}
 	}
-	return foundNode, nil
+	return foundNodes, nil
 }
 
 // Gets connection where specified output is
@@ -169,12 +166,12 @@ func findParentNode(nodeId string, flow *tokenapi.Flow) (*tokenapi.Node, error) 
 		return nil, fmt.Errorf("dependent node of %s not found", nodeId)
 	}
 
-	for nodeId, _ := range flow.Nodes {
+	for nodeId := range flow.Nodes {
 		for _, intf := range flow.Nodes[nodeId].Interfaces {
 
 			if strings.HasPrefix(intf.Name, "Output") {
 				conn := getOutputConnection(&flow.Connections, intf.ID)
-				if conn.From == dependentNodeId {
+				if conn != nil && conn.From == dependentNodeId {
 					return &flow.Nodes[nodeId], nil
 				}
 

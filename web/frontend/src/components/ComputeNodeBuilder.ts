@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import TokenNode from "./TokenNode";
 
 interface IInterfaceOptions {

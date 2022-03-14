@@ -35,6 +35,7 @@
 
 <script>
 import UserService from "@/services/user.service";
+import AuthService from "@/services/auth.service";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -48,15 +49,7 @@ export default {
     if (!this.loginData) {
       this.$router.push('/login');
     }
-    UserService.refreshToken().then(
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
+    AuthService.refreshToken()
   }
 };
 </script>

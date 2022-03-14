@@ -1,6 +1,7 @@
 
 <template>
   {{ name }}
+  <!-- eslint-disable vue/v-on-event-hyphenation -->
   <Datepicker
     v-model="date"
     class="dark-input"
@@ -17,6 +18,7 @@ import 'vue3-date-time-picker/dist/main.css'
 
 export default defineComponent({
   components: { Datepicker },
+  // eslint-disable-next-line vue/require-prop-types
   props: ["value", "name"],
   emits: ["input"],
   setup() {

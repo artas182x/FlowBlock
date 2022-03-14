@@ -22,42 +22,14 @@
     Save
   </button>
 
-  <div style="height: 70vh; width: 100%" class="form-group form-row col-md-4">
+  <div
+    style="height: 70vh; width: 100%"
+    class="form-group form-row col-md-4"
+  >
     <hint-overlay />
     <baklava-editor :plugin="viewPlugin" />
   </div>
-
 </template>
-
-<style>
-.node-editor .background {
-  background-color: #fafafa;
-}
-
-.node {
-  background: #212121;
-}
-
-.dark-input {
-  background-color: #ffffff;
-  color: #484848;
-
-}
-
-.dark-input:hover {
-  background-color: #d6d6d7;
-}
-
-.dark-context-menu {
-  background: #212121;
-}
-
-.connection {
-  stroke: #593196;
-}
-
-</style>
-
 
 <script>
 import userService from "@/services/user.service";
@@ -151,6 +123,35 @@ export default {
 
 }
 </script>
+
+<style>
+.node-editor .background {
+  background-color: #fafafa;
+}
+
+.node {
+  background: #212121;
+}
+
+.dark-input {
+  background-color: #ffffff;
+  color: #484848;
+
+}
+
+.dark-input:hover {
+  background-color: #d6d6d7;
+}
+
+.dark-context-menu {
+  background: #212121;
+}
+
+.connection {
+  stroke: #593196;
+}
+
+</style>
 
 <style scoped>
 .form-row {

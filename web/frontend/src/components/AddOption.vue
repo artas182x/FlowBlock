@@ -1,7 +1,12 @@
 
 <template>
-  <button @click="onClick" class="dark-input">{{ name }}</button>
-  <p></p>
+  <button
+    class="dark-input"
+    @click="onClick"
+  >
+    {{ name }}
+  </button>
+  <p />
 </template>
 
 <script lang="ts">

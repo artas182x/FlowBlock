@@ -180,12 +180,21 @@ func StartComputation(c *gin.Context) {
 
 	user, _ := c.Get(vars.IdentityKey)
 
-	task, err := services.QueueComputation(user.(*models.User).Login, tokenId)
+	runningTasks := services.GetUsersRunningComputations(user.(*models.User).Login)
+
+	for _, taskRunning := range runningTasks {
+		if taskRunning.Result.ID == tokenId {
+			// Silently return true if task is already running
+			c.JSON(204, "")
+		}
+	}
+
+	_, err := services.QueueComputation(user.(*models.User).Login, tokenId)
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, task)
+		c.JSON(204, "")
 	}
 
 }

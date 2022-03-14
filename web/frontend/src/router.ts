@@ -10,8 +10,7 @@ const BoardMedicalData = () => import("./components/BoardMedicalData.vue")
 const routes = [
   {
     path: "/",
-    name: "computations",
-    component: BoardComputations,
+    redirect: '/computations'
   },
   {
     path: "/login",

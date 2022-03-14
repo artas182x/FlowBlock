@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Node } from "@baklavajs/core";
 import {INodeState} from "@baklavajs/core/dist/baklavajs-core/types";
 
@@ -20,6 +21,7 @@ export default class TokenNode extends Node {
     public load(state: INodeState) {
         state.interfaces.forEach(([name, intfState]) => {
             const intf = this.addInputInterface(name);
+            /* eslint-disable  @typescript-eslint/no-non-null-assertion */
             intf!.id = intfState.id;
         });
         this.counter = state.interfaces.length;

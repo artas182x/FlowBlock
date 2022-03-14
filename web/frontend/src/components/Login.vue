@@ -78,7 +78,7 @@ export default {
      let reader = new FileReader();
      reader.onload = e => {
        let json = JSON.parse(e.target.result);
-       var user = {};
+       const user = {};
        user.certificate = json.credentials.certificate;
        user.privateKey = json.credentials.privateKey;
        user.mspid = json.mspId;
@@ -113,6 +113,10 @@ label {
 .card-container.card {
   max-width: 350px !important;
   padding: 40px 40px;
+}
+
+.inputFile {
+  max-width: 300px !important;
 }
 
 .card {

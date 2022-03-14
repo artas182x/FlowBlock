@@ -33,6 +33,7 @@ import { reactive } from "vue";
 import TableLite from 'vue3-table-lite'
 import UserService from "@/services/user.service";
 import moment from "moment";
+import AuthService from "@/services/auth.service";
 
 
 export default {
@@ -106,15 +107,7 @@ export default {
     if (!this.currentUser) {
       this.$router.push('/login');
     }
-    UserService.refreshToken().then(
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
+    AuthService.refreshToken()
     this.doSearchMedicalData(0, 10)
   },
   methods: {
