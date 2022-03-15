@@ -26,8 +26,12 @@ class AuthService {
     refreshToken() {
         return axios.get(config.BASE_API_URL + 'v1/refresh_token', {headers: authHeader()}).then(
             (response) => {
-                if (response.data.token) {
-                    localStorage.setItem('user', JSON.stringify(response.data));
+
+                let user = JSON.parse(localStorage.getItem('user'));
+
+                if (response.data.token && user && user.token) {
+                    user.token = response.data.token
+                    localStorage.setItem('user', JSON.stringify(user));
                 }
 
                 return response.data;

@@ -34,7 +34,6 @@
 </template>
 
 <script>
-import UserService from "@/services/user.service";
 import AuthService from "@/services/auth.service";
 
 export default {
