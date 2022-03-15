@@ -11,7 +11,7 @@
     </p>
     <p>
       <strong>Certificate:</strong>
-      {{ loginData.user.Login.certificate.substring(40, 60)  }} ...
+      {{ loginData.user.Login.certificate.substring(40, 60) }} ...
     </p>
     <p>
       <strong>Id:</strong>
@@ -23,15 +23,21 @@
     </p>
     <strong>Roles:</strong>
     <ul>
-      <li v-for="role in loginData.user.Roles" :key="role">{{role}}</li>
+      <li
+        v-for="role in loginData.user.Roles"
+        :key="role"
+      >
+        {{ role }}
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
-import UserService from "@/services/user.service";
+import AuthService from "@/services/auth.service";
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Profile',
   computed: {
     loginData() {
@@ -42,14 +48,7 @@ export default {
     if (!this.loginData) {
       this.$router.push('/login');
     }
-    UserService.refreshToken().then(
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
+    AuthService.refreshToken()
   }
 };
 </script>
