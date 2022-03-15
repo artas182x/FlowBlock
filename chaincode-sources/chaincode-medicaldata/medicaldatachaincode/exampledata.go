@@ -12,8 +12,8 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const PNEUMONIA_IMG_NUM = 200
-const NO_PNEUMONIA_IMG_NUM = 300
+const PNEUMONIA_IMG_NUM = 300
+const NO_PNEUMONIA_IMG_NUM = 200
 
 const HEART_RATE_GEN = 20
 const BLOOD_PREASSURE_GEN = 30
