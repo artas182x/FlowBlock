@@ -179,7 +179,7 @@ func main() {
 	apiV1.Use(authMiddleware.MiddlewareFunc())
 	{
 		apiV1.GET("/computation/availablemethods/:chaincode_name", controllers.GetAvailableMethods)
-		apiV1.POST("/computation/requesttoken", controllers.RequestToken)
+		apiV1.POST("/computation/requestflow", controllers.RequestFlow)
 		apiV1.GET("/computation/usertokens", controllers.ReadUserTokens)
 		apiV1.GET("/computation/token/:token_id", controllers.ReadToken)
 		apiV1.POST("/computation/token/:token_id/start", controllers.StartComputation)

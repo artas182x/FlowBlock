@@ -1,27 +1,30 @@
 <template>
   <div class="jumbotron">
-    <h1 class="display-4">Medical data</h1>
+    <h1 class="display-4">
+      Medical data
+    </h1>
   </div>
   <div>
-
     <h3>Show only data that you have rights to read</h3>
-    <h4>If you are academic institution you are probably looking for <router-link to="/computations"> <font-awesome-icon icon="microchip" /> Workflows </router-link></h4>
+    <h4>
+      If you are academic institution you are probably looking for <router-link to="/computations">
+        <font-awesome-icon icon="microchip" /> Workflows
+      </router-link>
+    </h4>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableMedicalData.isLoading"
-        :columns="tableMedicalData.columns"
-        :rows="tableMedicalData.rows"
-        :total="tableMedicalData.totalRecordCount"
-        @do-search="doSearchMedicalData"
-        @is-finished="tableLoadingFinish"
+      :is-slot-mode="true"
+      :is-loading="tableMedicalData.isLoading"
+      :columns="tableMedicalData.columns"
+      :rows="tableMedicalData.rows"
+      :total="tableMedicalData.totalRecordCount"
+      @do-search="doSearchMedicalData"
+      @is-finished="tableLoadingFinish"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
-
-
   </div>
 </template>
 
@@ -30,6 +33,7 @@ import { reactive } from "vue";
 import TableLite from 'vue3-table-lite'
 import UserService from "@/services/user.service";
 import moment from "moment";
+import AuthService from "@/services/auth.service";
 
 
 export default {
@@ -54,7 +58,7 @@ export default {
             display:  (row) => {
 
               return (
-                  '<button type="button" data-id="' +
+                  '<button type="button" title="Copy ID to clipboard" data-id="' +
                   row.ID +
                   '" class="is-rows-el copy-btn btn btn-light">&#x1f4cb;</button>'
               );
@@ -78,7 +82,7 @@ export default {
                 return ('<div style="margin-left: 10px;">' + row.MedicalEntryValue + "")
               } else {
                 return (
-                    '<button type="button" data-id="' +
+                    '<button type="button" title="Download asset" data-id="' +
                     row.MedicalEntryValue +
                     '" class="is-rows-el download-btn btn btn-light">&#128229;</button>'
                 );
@@ -99,6 +103,13 @@ export default {
     },
 
   },
+  mounted() {
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
+    AuthService.refreshToken()
+    this.doSearchMedicalData(0, 10)
+  },
   methods: {
 
     tableLoadingFinish(elements) {
@@ -117,7 +128,7 @@ export default {
               const fileLink = document.createElement('a');
 
               fileLink.href = fileURL;
-              fileLink.setAttribute('download', element.getAttribute("data-id"));
+              fileLink.setAttribute('download', element.getAttribute("data-id").split("?")[0]);
               document.body.appendChild(fileLink);
 
               fileLink.click();
@@ -167,20 +178,6 @@ export default {
       this.$store.dispatch('auth/logout');
       this.$router.push('/login');
     }
-  },
-  mounted() {
-    if (!this.currentUser) {
-      this.$router.push('/login');
-    }
-    UserService.refreshToken().then(
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
-    this.doSearchMedicalData(0, 10)
   },
 
 }
