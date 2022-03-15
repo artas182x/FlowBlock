@@ -2,12 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
 	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/vars"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-computationtoken/tokenapi"
+	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
 	"github.com/gin-gonic/gin"
 )
 
@@ -54,9 +53,8 @@ func GetAvailableMethods(c *gin.Context) {
 
 		var arguments []models.Argument
 
-		for _, argString := range strings.Split(method.Args, ";") {
-			argStrSplit := strings.Split(argString, ":")
-			arguments = append(arguments, models.Argument{Name: argStrSplit[0], Type: argStrSplit[1]})
+		for _, arg := range method.Args {
+			arguments = append(arguments, models.Argument{Name: arg.Name, Type: arg.Type})
 		}
 
 		var method = models.Method{Name: method.Name, Description: method.Description, RetType: method.RetType, Arguments: arguments}
@@ -67,46 +65,44 @@ func GetAvailableMethods(c *gin.Context) {
 
 }
 
-// @Summary RequestToken
+// @Summary RequestFlow
 // @Schemes
 // @Produce json
 // @Success 200
 // @Tags Computation
-// @Param input body RequestTokenInput true "Request tokeninput data"
-// @Router /v1/computation/requesttoken [post]
+// @Param input body tokenapi.Flow true "Request flow input data"
+// @Router /v1/computation/requestflow [post]
 // @Security Bearer
-func RequestToken(c *gin.Context) {
-	var input RequestTokenInput
-	if err := c.ShouldBind(&input); err != nil {
+func RequestFlow(c *gin.Context) {
+	var input tokenapi.Flow
+
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
 		return
 	}
 	user, _ := c.Get(vars.IdentityKey)
 
-	var argsString string
-
-	for index, arg := range input.Arguments {
-		argsString += arg
-		if index < len(input.Arguments)-1 {
-			argsString += ";"
-		}
-	}
-
-	out, err := services.SubmitTransaction(user.(*models.User).Login, vars.ComputationTokenChaincodeName, vars.ComputationTokenSmartContractName, "RequestToken", input.ChaincodeName, input.Method, argsString)
+	flowJSON, err := json.Marshal(input)
 
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
 		return
 	}
 
-	var token tokenapi.Token
-	err = json.Unmarshal(out, &token)
+	out, err := services.SubmitTransaction(user.(*models.User).Login, vars.ComputationTokenChaincodeName, vars.ComputationTokenSmartContractName, "RequestFlow", string(flowJSON))
+
+	if err != nil {
+		c.JSON(400, gin.H{"message": err.Error()})
+		return
+	}
+
+	var flowRet tokenapi.Flow
+	err = json.Unmarshal(out, &flowRet)
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, token)
+		c.JSON(200, flowRet)
 	}
-
 }
 
 // @Summary ReadUserTokens
@@ -184,12 +180,21 @@ func StartComputation(c *gin.Context) {
 
 	user, _ := c.Get(vars.IdentityKey)
 
-	task, err := services.QueueComputation(user.(*models.User).Login, tokenId)
+	runningTasks := services.GetUsersRunningComputations(user.(*models.User).Login)
+
+	for _, taskRunning := range runningTasks {
+		if taskRunning.Result.ID == tokenId {
+			// Silently return true if task is already running
+			c.JSON(204, "")
+		}
+	}
+
+	_, err := services.QueueComputation(user.(*models.User).Login, tokenId)
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, task)
+		c.JSON(204, "")
 	}
 
 }

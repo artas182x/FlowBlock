@@ -5,16 +5,27 @@
         id="profile-img"
         src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
         class="profile-img-card"
-      />
+      >
       <Form :validation-schema="schema">
         <div class="form-group">
           <label for="wallet">Wallet</label>
-          <input type="file" @change="onFileChange" class="inputFile" />
-          <ErrorMessage name="certificate" class="error-feedback" />
+          <input
+            type="file"
+            class="inputFile"
+            @change="onFileChange"
+          >
+          <ErrorMessage
+            name="certificate"
+            class="error-feedback"
+          />
         </div>
 
         <div class="form-group">
-          <div v-if="message" class="alert alert-danger" role="alert">
+          <div
+            v-if="message"
+            class="alert alert-danger"
+            role="alert"
+          >
             {{ message }}
           </div>
         </div>
@@ -28,6 +39,7 @@ import { Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: "Login",
   components: {
     Form,
@@ -66,7 +78,7 @@ export default {
      let reader = new FileReader();
      reader.onload = e => {
        let json = JSON.parse(e.target.result);
-       var user = {};
+       const user = {};
        user.certificate = json.credentials.certificate;
        user.privateKey = json.credentials.privateKey;
        user.mspid = json.mspId;
@@ -101,6 +113,10 @@ label {
 .card-container.card {
   max-width: 350px !important;
   padding: 40px 40px;
+}
+
+.inputFile {
+  max-width: 300px !important;
 }
 
 .card {

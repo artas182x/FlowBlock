@@ -1,4 +1,63 @@
 definitions:
+  controllers.Connection:
+    properties:
+      from:
+        type: string
+      id:
+        type: string
+      to:
+        type: string
+    type: object
+  controllers.Flow:
+    properties:
+      connections:
+        items:
+          $ref: '#/definitions/controllers.Connection'
+        type: array
+      nodes:
+        items:
+          $ref: '#/definitions/controllers.Node'
+        type: array
+    type: object
+  controllers.Interface:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  controllers.Node:
+    properties:
+      chaincodeName:
+        type: string
+      directlyExecutable:
+        type: boolean
+      id:
+        type: string
+      interfaces:
+        items:
+          $ref: '#/definitions/controllers.Interface'
+        type: array
+      methodName:
+        type: string
+      name:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/controllers.Options'
+        type: array
+      tokenId:
+        type: string
+      type:
+        type: string
+    type: object
+  controllers.Options:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
   controllers.RequestMedicalDataInput:
     properties:
       dateEndTimestamp:
@@ -7,21 +66,6 @@ definitions:
         type: string
       medicalEntryName:
         type: string
-    type: object
-  controllers.RequestTokenInput:
-    properties:
-      arguments:
-        items:
-          type: string
-        type: array
-      chaincodeName:
-        type: string
-      method:
-        type: string
-    required:
-    - arguments
-    - chaincodeName
-    - method
     type: object
   models.Login:
     properties:
@@ -88,15 +132,15 @@ paths:
       summary: GetQueue
       tags:
       - Computation
-  /v1/computation/requesttoken:
+  /v1/computation/requestflow:
     post:
       parameters:
-      - description: Request tokeninput data
+      - description: Request flow input data
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/controllers.RequestTokenInput'
+          $ref: '#/definitions/controllers.Flow'
       produces:
       - application/json
       responses:
@@ -104,7 +148,7 @@ paths:
           description: ""
       security:
       - Bearer: []
-      summary: RequestToken
+      summary: RequestFlow
       tags:
       - Computation
   /v1/computation/token/{token_id}:

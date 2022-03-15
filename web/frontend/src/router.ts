@@ -1,22 +1,16 @@
 import { createWebHistory, createRouter } from "vue-router";
-import Home from "./components/Home.vue";
 import Login from "./components/Login.vue";
 
 // lazy-loaded
 const Profile = () => import("./components/Profile.vue")
 const BoardComputations = () => import("./components/BoardComputations.vue")
-const TokenSubmit = () =>  import("@/components/TokenSubmit");
+const TokenSubmit = () =>  import("@/components/TokenSubmit.vue");
 const BoardMedicalData = () => import("./components/BoardMedicalData.vue")
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: Home,
-  },
-  {
-    path: "/home",
-    component: Home,
+    redirect: '/computations'
   },
   {
     path: "/login",
