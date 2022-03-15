@@ -104,7 +104,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/computation/requesttoken": {
+        "/v1/computation/requestflow": {
             "post": {
                 "security": [
                     {
@@ -117,15 +117,15 @@ var doc = `{
                 "tags": [
                     "Computation"
                 ],
-                "summary": "RequestToken",
+                "summary": "RequestFlow",
                 "parameters": [
                     {
-                        "description": "Request tokeninput data",
+                        "description": "Request flow input data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.RequestTokenInput"
+                            "$ref": "#/definitions/controllers.Flow"
                         }
                     }
                 ],
@@ -251,6 +251,97 @@ var doc = `{
         }
     },
     "definitions": {
+        "controllers.Connection": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.Flow": {
+            "type": "object",
+            "properties": {
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Connection"
+                    }
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Node"
+                    }
+                }
+            }
+        },
+        "controllers.Interface": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.Node": {
+            "type": "object",
+            "properties": {
+                "chaincodeName": {
+                    "type": "string"
+                },
+                "directlyExecutable": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "interfaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Interface"
+                    }
+                },
+                "methodName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Options"
+                    }
+                },
+                "tokenId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.Options": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.RequestMedicalDataInput": {
             "type": "object",
             "properties": {
@@ -261,28 +352,6 @@ var doc = `{
                     "type": "string"
                 },
                 "medicalEntryName": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.RequestTokenInput": {
-            "type": "object",
-            "required": [
-                "arguments",
-                "chaincodeName",
-                "method"
-            ],
-            "properties": {
-                "arguments": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "chaincodeName": {
-                    "type": "string"
-                },
-                "method": {
                     "type": "string"
                 }
             }

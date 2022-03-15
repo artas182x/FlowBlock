@@ -12,8 +12,8 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const PNEUMONIA_IMG_NUM = 20
-const NO_PNEUMONIA_IMG_NUM = 50
+const PNEUMONIA_IMG_NUM = 300
+const NO_PNEUMONIA_IMG_NUM = 200
 
 const HEART_RATE_GEN = 20
 const BLOOD_PREASSURE_GEN = 30
@@ -47,7 +47,7 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 func randDate(currId int) time.Time {
 	min := time.Date(2020, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
 
-	sec := min + int64(currId)*90000
+	sec := min + int64(currId)*int64(currId)*400
 	return time.Unix(sec, 0)
 }
 

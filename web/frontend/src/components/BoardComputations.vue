@@ -1,47 +1,60 @@
 <template>
   <div class="jumbotron">
-    <h1 class="display-4">My workflows</h1>
+    <h1 class="display-4">
+      My workflows
+    </h1>
   </div>
   <div>
-
-    <div v-if="submitSuccess" class="alert alert-success">
+    <div
+      v-if="submitSuccess"
+      class="alert alert-success"
+    >
       You successfully scheduled a task
     </div>
 
-    <div v-if="submitError" class="alert alert-danger">
+    <div
+      v-if="submitError"
+      class="alert alert-danger"
+    >
       Error during scheduling a task
     </div>
 
-    <button type="button" class="btn btn-primary float-sm-end" @click="goToTokenSubmit()">Submit a workflow</button>
+    <button
+      type="button"
+      class="btn btn-primary float-sm-end"
+      @click="goToTokenSubmit()"
+    >
+      Workflow designer
+    </button>
 
     <h1>Queue</h1>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableQueue.isLoading"
-        :columns="tableQueue.columns"
-        :rows="tableQueue.rows"
-        :total="tableQueue.totalRecordCount"
-        @do-search="doSearchQueue"
+      :is-slot-mode="true"
+      :is-loading="tableQueue.isLoading"
+      :columns="tableQueue.columns"
+      :rows="tableQueue.rows"
+      :total="tableQueue.totalRecordCount"
+      @do-search="doSearchQueue"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
 
-    <p></p>
+    <p />
     <h1>My tokens</h1>
 
     <table-lite
-        :is-slot-mode="true"
-        :is-loading="tableTokens.isLoading"
-        :columns="tableTokens.columns"
-        :rows="tableTokens.rows"
-        :total="tableTokens.totalRecordCount"
-        @do-search="doSearchTokens"
-        @is-finished="tableLoadingFinish"
+      :is-slot-mode="true"
+      :is-loading="tableTokens.isLoading"
+      :columns="tableTokens.columns"
+      :rows="tableTokens.rows"
+      :total="tableTokens.totalRecordCount"
+      @do-search="doSearchTokens"
+      @is-finished="tableLoadingFinish"
     >
-      <template v-slot:name="data">
+      <template #name="data">
         {{ data.value.name }}
       </template>
     </table-lite>
@@ -54,6 +67,7 @@ import TableLite from 'vue3-table-lite'
 import UserService from "@/services/user.service";
 import userService from "@/services/user.service";
 import moment from "moment";
+import AuthService from "@/services/auth.service";
 
 export default {
   components: { TableLite },
@@ -86,6 +100,26 @@ export default {
           {
             label: "Returned value",
             field: "retval",
+            display:  (row) => {
+
+              if (row.retType !== "s3img") {
+                return ('<div style="margin-left: 10px;">' + row.retval + "")
+              } else {
+                return (
+                    '<button type="button" title="Download" data-id="' +
+                    row.retval.split("?")[0] +
+                    '" class="is-rows-el download-btn btn btn-light">&#128229;</button>' +
+
+                    '<button title="Copy SHA256 checksum to clipboard" type="button" data-id="' +
+                    row.retval.split("?")[1] +
+                    '" class="is-rows-el copy-btn btn btn-light">&#x1f4cb;</button>'
+
+                );
+              }
+
+
+
+            },
           },
           {
             label: "Time requested",
@@ -107,7 +141,9 @@ export default {
               });
 
               if (alreadyRunning) {
-                return("Already running")
+                return ("Already running")
+              } else if (!row.directlyExecutable) {
+                return ("Dependent on token above")
               } else if(moment(row.expireTime, 'MMMM Do YYYY, h:mm:ss a').isBefore(moment(Date.now())) && row.retval === "") {
                 return("Token has expired and workflow wasn't started")
               } else if(moment(row.expireTime, 'MMMM Do YYYY, h:mm:ss a').isAfter(moment(Date.now())) && row.retval === "") {
@@ -152,6 +188,14 @@ export default {
       });
     }
   },
+  mounted() {
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
+    AuthService.refreshToken()
+    this.doSearchQueue(0, 10)
+    this.doSearchTokens(0, 10)
+  },
   methods: {
     goToTokenSubmit(){
       this.$router.push('/tokensubmit');
@@ -166,13 +210,11 @@ export default {
                   this.submitSuccess = true;
                   this.submitError = false;
                   this.doSearchQueue(0, 20);
-                  this.doSearchTokens(0, 20);
                 },
                 () => {
                   this.submitSuccess = false;
                   this.submitError = true;
                   this.doSearchQueue(0, 20);
-                  this.doSearchTokens(0, 20);
                 }
             );
           });
@@ -180,6 +222,26 @@ export default {
         if (element.classList.contains("details-btn")) {
           element.addEventListener("click", function () {
             console.log(this.dataset.id + " details-btn click!!");
+          });
+        }
+        if (element.classList.contains("download-btn")) {
+          element.addEventListener("click", () => {
+
+            UserService.downloadFile(element.getAttribute("data-id")).then((response) => {
+              const fileURL = window.URL.createObjectURL(new Blob([response.data]));
+              const fileLink = document.createElement('a');
+
+              fileLink.href = fileURL;
+              fileLink.setAttribute('download', element.getAttribute("data-id"));
+              document.body.appendChild(fileLink);
+
+              fileLink.click();
+            })
+          });
+        }
+        if (element.classList.contains("copy-btn")) {
+          element.addEventListener("click", () => {
+            navigator.clipboard.writeText(element.getAttribute("data-id"))
           });
         }
       });
@@ -199,18 +261,19 @@ export default {
               const max = Math.min(offset+limit, tokens.length);
               for (let i = offset; i < max ; i++) {
 
-                let argsStrings = tokens[i]["Result"]["Arguments"].split(";")
+                let argsStrings = tokens[i]["Result"]["Arguments"]
 
                 let args = [];
 
                 argsStrings.forEach((value) => {
-                  const argStruct = value.split(":")
-                  let argVal = argStruct[0]
-                  const argName = argStruct[1]
-                  const argType = argStruct[2]
+                  let argVal = value["Value"]
+                  const argName = value["Name"]
+                  const argType = value["Type"]
 
                   if (argType === "ts") {
                     argVal = moment(new Date(parseInt(argVal))).format('MMMM Do YYYY, h:mm:ss a')
+                  } else if (argType === "tokenInputs") {
+                    argVal = "..." + argVal.substr(argVal.length-25, 25)
                   }
 
                   args.push(argName + ": " + argVal)
@@ -253,22 +316,23 @@ export default {
               const max = Math.min(offset+limit, tokens.length);
               for (let i = offset; i < max ; i++) {
 
-                let argsStrings = tokens[i]["Arguments"].split(";")
+                let argsStrings = tokens[i]["Arguments"]
 
                 let args = [];
 
                 argsStrings.forEach((value) => {
-                  const argStruct = value.split(":")
-                  let argVal = argStruct[0]
-                  const argName = argStruct[1]
-                  const argType = argStruct[2]
+                  let argVal = value["Value"]
+                  const argName = value["Name"]
+                  const argType = value["Type"]
 
                   if (argType === "ts") {
-                     argVal = moment(new Date(parseInt(argVal))).format('MMMM Do YYYY, h:mm:ss a')
+                     argVal = moment(new Date(parseInt(argVal)*1000)).format('MMMM Do YYYY, h:mm:ss a')
                   } else if (argType === "s3img") {
                     const fileName = argVal.split("?")[0]
                     const fileSum = argVal.split("?")[1]
                     argVal = fileName + " (" + fileSum.substr(7) + "...)"
+                  } else if (argType === "tokenInputs") {
+                    argVal = "..." + argVal.substr(argVal.length-25, 25)
                   }
 
                   args.push(argName + ": " + argVal)
@@ -278,9 +342,11 @@ export default {
                 data.push({
                   id: tokens[i]["ID"],
                   chaincodeName: tokens[i]["ChaincodeName"],
+                  directlyExecutable: tokens[i]["DirectlyExecutable"],
                   method: tokens[i]["Method"].split(":")[1],
                   arguments: args,
                   retval: tokens[i]["ret"]["RetValue"],
+                  retType: tokens[i]["ret"]["RetType"],
                   timeRequested: moment(new Date(tokens[i]["TimeRequested"])).format('MMMM Do YYYY, h:mm:ss a'),
                   expireTime: moment(new Date(tokens[i]["ExpirationTime"])).format('MMMM Do YYYY, h:mm:ss a'),
                 });
@@ -303,21 +369,6 @@ export default {
       this.$store.dispatch('auth/logout');
       this.$router.push('/login');
     }
-  },
-  mounted() {
-    if (!this.currentUser) {
-      this.$router.push('/login');
-    }
-    UserService.refreshToken().then(
-        () => {},
-        (error) => {
-          if (error.response.status === 401) {
-            this.logOut()
-          }
-        }
-    )
-    this.doSearchQueue(0, 10)
-    this.doSearchTokens(0, 10)
   },
 
 }

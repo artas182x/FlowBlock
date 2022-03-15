@@ -3,9 +3,9 @@ module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/c
 go 1.14
 
 require (
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220307234246-317c5dca9601
+	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220314004216-9b6cc88ab755
 	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata v0.0.0-20220221203445-4e8272ade8a4
-	github.com/aws/aws-sdk-go v1.43.13 // indirect
+	github.com/aws/aws-sdk-go v1.43.17 // indirect
 	github.com/galeone/tensorflow/tensorflow/go v0.0.0-20210519172502-4018d721b591
 	github.com/galeone/tfgo v0.0.0-20210914072119-caabdf830ee3
 	github.com/go-openapi/spec v0.20.4 // indirect
@@ -18,8 +18,10 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
+	github.com/wcharczuk/go-chart/v2 v2.1.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220307203707-22a9840ba4d7 // indirect
-	google.golang.org/genproto v0.0.0-20220307174427-659dce7fcb03 // indirect
+	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+	google.golang.org/genproto v0.0.0-20220310185008-1973136f34c6 // indirect
+	google.golang.org/grpc v1.45.0 // indirect
 )
