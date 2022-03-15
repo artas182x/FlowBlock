@@ -4,7 +4,7 @@ if (process.env.NODE_ENV === 'production') {
   }
 } else {
   module.exports = {
-    BASE_API_URL: "http://localhost:80/api/"
+    BASE_API_URL: "http://192.168.121.104/api/"
   }
 }
 

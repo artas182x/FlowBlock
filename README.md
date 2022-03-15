@@ -2,7 +2,9 @@
 
 Distributed computation platform that allows to perform computations on data without possibility to see it. All computations are performed on Blockchain in auditable way. It can be used by for example hospitals and universities to perform computations on patient's data in the way that universities see only the result - they don't see actual data. Patient have ability to give and revoke permissions (read, write or compute) to specific people or to organisations.
 
-![image](https://user-images.githubusercontent.com/3458010/156927147-d397abe5-ff57-4d8b-8d81-bdb3d1a9d40c.png)
+![image](https://user-images.githubusercontent.com/3458010/158281410-a0844f35-7d13-432e-8e6f-03a3f292655d.png)
+
+![image](https://user-images.githubusercontent.com/3458010/158281286-61c23df3-ae0b-46f2-b8bc-00e63ed0a06e.png)
 
 Used stack:
 1. HyperLedger Fabric 2.3.3

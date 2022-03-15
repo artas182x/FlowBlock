@@ -2,7 +2,7 @@ version: "3.8"
 
 x-frontend-common: &frontend-common
   restart: unless-stopped
-  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.2
+  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/frontend:0.4
   build: ./frontend
   networks:
     - hyperledger
@@ -14,10 +14,10 @@ x-frontend-common: &frontend-common
 
 x-backend-common: &backend-common
   restart: unless-stopped
-  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.3
+  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.4
   build: ./backend
   depends_on:
-    - redis
+    - redis1
     - minio1
   networks:
     - hyperledger

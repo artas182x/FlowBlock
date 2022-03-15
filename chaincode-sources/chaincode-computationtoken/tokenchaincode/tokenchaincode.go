@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,26 +15,29 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const TOKEN_VALID_MINUTES = 5
-
 const INDEX_NAME = "tokens"
 const KEY_NAME = "tokens"
+
+const TOKEN_VALID_MINUTES = 10
 
 type ComputationTokenSmartContract struct {
 	contractapi.Contract
 }
 
-// AddEntry issues a new entry to the world state with given details.
-func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string) (*tokenapi.Token, error) {
+// RequestToken issues a new token to the world state with given details.
+func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.TransactionContextInterface, chaincodeName string, method string, arguments string, description string, directlyExecutable string) (*tokenapi.Token, error) {
 	x509, _ := cid.GetX509Certificate(ctx.GetStub())
 	userCN := x509.Subject.ToRDNSequence().String()
-	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, ctx.GetStub().GetTxID()})
+
+	log.Printf("[ComputationTokenSmartContract:RequestToken] requesting token: chaincode: %s method: %s args: %s desc: %s directlyExecutable: %s\n", chaincodeName, method, arguments, description, directlyExecutable)
 
 	timestampRequested, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
 		return nil, err
 	}
 	timeRequested := time.Unix(int64(timestampRequested.GetSeconds()), int64(timestampRequested.GetNanos())).UTC()
+
+	id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, userCN, strconv.FormatInt(timestampRequested.GetSeconds(), 10), method, arguments})
 
 	expirationTime := timeRequested.Add(time.Minute * time.Duration(TOKEN_VALID_MINUTES))
 
@@ -43,10 +47,7 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 	}
 
 	params := []string{"ListAvailableMethods"}
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
-	}
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
 
 	response := ctx.GetStub().InvokeChaincode(chaincodeName, queryArgs, "")
 
@@ -61,11 +62,17 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, err
 	}
 
+	var inputArgs []tokenapi.Argument
+	err = json.Unmarshal([]byte(arguments), &inputArgs)
+	if err != nil {
+		return nil, err
+	}
+
 	var selectedMethod tokenapi.Method
 
 	for _, element := range methods {
 		if element.Name == method {
-			if len(strings.Split(element.Args, ";")) == len(strings.Split(arguments, ";")) {
+			if len(element.Args) == len(inputArgs) {
 				found = true
 				selectedMethod = element
 				break
@@ -76,31 +83,29 @@ func (s *ComputationTokenSmartContract) RequestToken(ctx contractapi.Transaction
 		return nil, fmt.Errorf("ComputationTokenSmartContract:RequestToken: Method %s with arguments %s not found in %s", method, arguments, chaincodeName)
 	}
 
-	var mergedArgsString string = ""
-	argsArray := strings.Split(arguments, ";")
-
-	for num, arg := range strings.Split(selectedMethod.Args, ";") {
-		argsSplit := strings.Split(arg, ":")
-		mergedArgsString += fmt.Sprintf("%s:%s:%s", argsArray[num], argsSplit[0], argsSplit[1])
-		if num < len(argsArray)-1 {
-			mergedArgsString += ";"
-		}
+	for i, arg := range selectedMethod.Args {
+		inputArgs[i].Name = arg.Name
+		inputArgs[i].Type = arg.Type
 	}
 
 	token := tokenapi.Token{
-		ID:             base64.URLEncoding.EncodeToString([]byte(id)),
-		UserRequested:  x509.Subject.ToRDNSequence().String(),
-		ChaincodeName:  chaincodeName,
-		Method:         method,
-		Arguments:      mergedArgsString,
-		TimeRequested:  timeRequested,
-		ExpirationTime: expirationTime,
+		ID:                 base64.URLEncoding.EncodeToString([]byte(id)),
+		UserRequested:      x509.Subject.ToRDNSequence().String(),
+		ChaincodeName:      chaincodeName,
+		Method:             method,
+		Arguments:          inputArgs,
+		TimeRequested:      timeRequested,
+		ExpirationTime:     expirationTime,
+		Description:        description,
+		DirectlyExecutable: strings.ToLower(directlyExecutable) == "true",
 	}
 
 	tokenJSON, err := json.Marshal(token)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("[ComputationTokenSmartContract:RequestToken] token submitted successfully")
 
 	err = ctx.GetStub().PutState(id, tokenJSON)
 	if err != nil {
@@ -225,16 +230,43 @@ func (s *ComputationTokenSmartContract) Compute(ctx contractapi.TransactionConte
 
 	params := []string{token.Method, nonce}
 
-	args := strings.Split(token.Arguments, ";")
-	for _, arg := range args {
-		params = append(params, strings.Split(arg, ":")[0])
-	}
-
 	log.Printf("Starting computing: %s %+q\n", token.Method, params)
 
-	queryArgs := make([][]byte, len(params))
-	for i, arg := range params {
-		queryArgs[i] = []byte(arg)
+	queryArgs := tokenapi.ParamsToHyperledgerArgs(params)
+
+	for _, arg := range token.Arguments {
+
+		if arg.Type == "tokenInputs" {
+			subTokensIds := strings.Split(arg.Value, "|")
+
+			var subTokens []tokenapi.Token
+
+			for _, subTokenId := range subTokensIds {
+
+				log.Printf("Subtoken compute: %s", subTokenId)
+
+				tokenResponse, err := s.Compute(ctx, subTokenId)
+				if err != nil {
+					return nil, err
+				}
+
+				log.Printf("Subtoken compute success")
+
+				subTokens = append(subTokens, *tokenResponse)
+			}
+
+			subTokensJSON, err := json.Marshal(subTokens)
+
+			if err != nil {
+				return nil, err
+			}
+
+			queryArgs = append(queryArgs, subTokensJSON)
+
+		} else {
+			queryArgs = append(queryArgs, []byte(arg.Value))
+		}
+
 	}
 
 	response := ctx.GetStub().InvokeChaincode("examplealgorithm", queryArgs, "")
