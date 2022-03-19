@@ -17,7 +17,7 @@ Author: Artur Załęski
 
 # Prerequisites (manual steps)
 
-If you are using swarm to deploy it on more than one node, you need to use NFS (must be v4 and support fcntl and no_root_squash) or Samba (not tested) to share this directory on all nodes in the same location. if you use Vagrant it is done for you (directory is mounted to /hyperledger)
+If you are using swarm to deploy it on more than one node, you need to use NFS (must be v4 and support fcntl and no_root_squash) to share this directory on all nodes in the same location. if you use Vagrant it is done for you (directory is mounted to /hyperledger)
 
 You need to be able to clone Github repositories over SSH (setup keys) - only manager node
 
@@ -77,10 +77,16 @@ In this repository there is a Vagrant demo included. You can use it to setup loc
 
 # Run network
 
-1. Go to network directory
-2. Run ./restart.sh command (run from manager node)
-3. Go to web directory
-4. Type: docker stack deploy -c docker-compose.yml web
+1. Set NFS IP and directory on server to be mounted to container
+
+    export NFS_IP=192.168.121.1
+
+    export NFS_DEVICE=/srv/myexportdir
+
+2. Go to network directory
+3. Run ./restart.sh command (run from manager node)
+4. Go to web directory
+5. Type: docker stack deploy -c docker-compose.yml web
 
 # Useful scripts
 
