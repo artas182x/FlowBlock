@@ -14,7 +14,7 @@ x-frontend-common: &frontend-common
 
 x-backend-common: &backend-common
   restart: unless-stopped
-  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.4
+  image: registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/backend:0.5
   build: ./backend
   depends_on:
     - redis1
@@ -50,7 +50,9 @@ services:
     networks:
       - hyperledger
     volumes:
-      - "${PWD}/sample_files/:/files/"
+        - type: volume
+          source: web_files
+          target: /web
     depends_on:
       - minio1
       - minio2
@@ -58,7 +60,7 @@ services:
      /bin/sh -c "sleep 5 &&
      /usr/bin/mc config host add myminio http://minio1:9000 admin adminadmin;
      /usr/bin/mc mb myminio/input-files;
-     /usr/bin/mc cp /files/* myminio/input-files
+     /usr/bin/mc cp /web/sample_files/* myminio/input-files
      "
 
   redis1:
@@ -95,13 +97,16 @@ services:
     <<: *backend-common
     hostname: backend1
     volumes:
-    - "${PWD}/network1.yaml:/out/network.yaml"
+        - type: volume
+          source: web_files
+          target: /web
     deploy:
       placement:
         constraints:
           - node.labels.org == org1
     environment:
       - MINIO_URL=http://minio1:9000
+      - NETWORK_YAML=/web/network1.yaml
       - REDIS_URL=redis://redis1:6379
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminadmin
@@ -130,12 +135,15 @@ services:
     <<: *backend-common
     hostname: backend2
     volumes:
-    - "${PWD}/network2.yaml:/out/network.yaml"
+        - type: volume
+          source: web_files
+          target: /web
     deploy:
       placement:
         constraints:
           - node.labels.org == org2
     environment:
+      - NETWORK_YAML=/web/network2.yaml
       - MINIO_URL=http://minio2:9000
       - REDIS_URL=redis://redis2:6379
       - MINIO_ROOT_USER=admin
@@ -206,6 +214,12 @@ networks:
     external: true
     
 volumes:
+  web_files:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: addr=${NFS_IP},rw,relatime,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2
+      device: ":${NFS_DEVICE}/web"
   data1-1:
   data1-2:
   data2-1:
