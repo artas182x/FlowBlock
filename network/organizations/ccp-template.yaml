@@ -6,7 +6,17 @@ client:
   connection:
     timeout:
       peer:
-        endorser: '300'
+        endorser: '1000'
+      orderer: 60
+      # connection options, typically these will be common GRPC settings,
+      # overriding what has been set in the system config file "default.json"
+    options:
+      grpc.keepalive_timeout_ms: 90000
+      grpc-max-send-message-length": -1
+      grpc.keepalive_time_ms": 900000
+      grpc.http2.min_time_between_pings_ms": 120000
+      grpc.http2.max_pings_without_data": 0
+      grpc.keepalive_permit_without_calls": 1
 organizations:
   Org${ORG}:
     mspid: Org${ORG}MSP
