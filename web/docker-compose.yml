@@ -184,12 +184,15 @@ services:
     <<: *backend-common
     hostname: backend3
     volumes:
-    - "${PWD}/network3.yaml:/out/network.yaml"
+        - type: volume
+          source: web_files
+          target: /web
     deploy:
       placement:
         constraints:
           - node.labels.org == org3
     environment:
+      - NETWORK_YAML=/web/network3.yaml
       - MINIO_URL=http://minio3:9000
       - REDIS_URL=redis://redis3:6379
       - MINIO_ROOT_USER=admin
