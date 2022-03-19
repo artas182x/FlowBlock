@@ -234,12 +234,15 @@ services:
     <<: *backend-common
     hostname: backend4
     volumes:
-    - "${PWD}/network4.yaml:/out/network.yaml"
+        - type: volume
+          source: web_files
+          target: /web
     deploy:
       placement:
         constraints:
           - node.labels.org == org4
     environment:
+      - NETWORK_YAML=/web/network4.yaml
       - MINIO_URL=http://minio4:9000
       - REDIS_URL=redis://redis4:6379
       - MINIO_ROOT_USER=admin

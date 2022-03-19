@@ -279,9 +279,10 @@ services:
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_PROFILE_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_TLS_CERT_FILE=/hyperledger/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/hyperledger/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/hyperledger/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/hyperledger/network/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/msp
       # Peer specific variables
       - CORE_PEER_ID=peer0.org4.example.com
       - CORE_PEER_ADDRESS=peer0.org4.example.com:12051
@@ -295,10 +296,10 @@ services:
       - CORE_CHAINCODE_GOLANG_DYNAMICLINK=true
     volumes:
         - ${DOCKER_SOCK}:/host/var/run/docker.sock
-        - ../organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls:/etc/hyperledger/fabric/tls
+        - type: volume
+          source: hyperledger
+          target: /hyperledger
         - peer0.org4.example.com:/var/hyperledger/production
-        - ../../config:/etc/hyperledger/fabric
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:
