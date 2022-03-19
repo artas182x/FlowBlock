@@ -2,6 +2,7 @@ package services
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -10,9 +11,8 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-var ccpPath = "network.yaml"
-
 func GetNetwork(loginVals models.Login) (*gateway.Network, error) {
+	ccpPath := os.Getenv("NETWORK_YAML")
 	wallet := gateway.NewInMemoryWallet()
 	identity := gateway.NewX509Identity(loginVals.MspID, loginVals.Certificate, loginVals.PrivateKey)
 	wallet.Put("User", identity)
