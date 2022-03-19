@@ -173,7 +173,7 @@ services:
     labels:
       service: hyperledger-fabric
     environment:
-      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_HOME=/hyperledger/network/organizations/fabric-ca/ordererOrg2
       - FABRIC_CA_SERVER_CA_NAME=ca-orderer
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_PORT=29054
@@ -183,7 +183,9 @@ services:
       - "39054:39054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ../organizations/fabric-ca/ordererOrg2:/etc/hyperledger/fabric-ca-server
+        - type: volume
+          source: hyperledger
+          target: /hyperledger
     container_name: ca_orderer2
     networks:
       - test
