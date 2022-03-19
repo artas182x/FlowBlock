@@ -45,3 +45,4 @@ vendor/
 web/sample_files/*.jpeg
 
 .vagrant
+__pycache__
