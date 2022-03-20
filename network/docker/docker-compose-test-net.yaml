@@ -292,7 +292,7 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:12051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org4.example.com:12051
       - CORE_PEER_LOCALMSPID=Org4MSP
-      - CORE_CHAINCODE_GOLANG_RUNTIME=registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/hyperledger-baseos:2.3.3
+      - CORE_CHAINCODE_GOLANG_RUNTIME=registry.gitlab.com/artas182x/flowblock/hyperledger-baseos:2.3.3
       - CORE_CHAINCODE_GOLANG_DYNAMICLINK=true
     volumes:
         - ${DOCKER_SOCK}:/host/var/run/docker.sock
