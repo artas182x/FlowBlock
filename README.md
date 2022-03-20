@@ -7,17 +7,19 @@ Distributed computation platform that allows to perform computations on data wit
 ![image](https://user-images.githubusercontent.com/3458010/158281286-61c23df3-ae0b-46f2-b8bc-00e63ed0a06e.png)
 
 Used stack:
-1. HyperLedger Fabric 2.3.3
+1. Hyperledger Fabric 2.3.3
 2. Go and Gin framework
-3. Vue
-4. Min.io
+3. Vue 3
+4. Min.io (cluster mode) as S3-compatible storage
 5. Docker Swarm
+6. goCelery + Redis
+7. Tensorflow for example classification algorithm that can be run
 
 Author: Artur Załęski
 
 # Prerequisites (manual steps)
 
-If you are using swarm to deploy it on more than one node, you need to use NFS (must be v4 and support fcntl and no_root_squash) to share this directory on all nodes in the same location. if you use Vagrant it is done for you (directory is mounted to /hyperledger)
+You need to have NFS server (preffered V4), because Docker swarm nodes use it to exchange data about certificates and genesis block. Machine that will be used to deploy nodes needs to have this share mounted and all scripts should be run from there.
 
 You need to be able to clone Github repositories over SSH (setup keys) - only manager node
 
@@ -41,7 +43,9 @@ After that you need to place files in web/sample_files. Files must be named in t
 
 You need 20 pneumonia images and 50 non-pneumonia (you can change these values in chaincode-sources/chaincode-medicaldata/exampledata.go)
 
-# Useful scripts
+Then you can go to next section to install all needed packages
+
+# Prerequisites (useful scripts)
 
 provisionMachines.sh - run to install prerequsites on machine
 
