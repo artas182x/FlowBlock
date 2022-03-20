@@ -13,7 +13,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io golang-1.17  git;
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-echo 'export PATH="$PATH:/usr/lib/go-1.17/bin"' | sudo tee -a ~/.profile
+echo 'export PATH="$PATH:/usr/lib/go-1.17/bin"' | sudo tee -a ~/.bashrc
 
 curl -sSL https://bit.ly/2ysbOFE | sudo bash -s -- 2.3.3 1.5.2 -s -b
 

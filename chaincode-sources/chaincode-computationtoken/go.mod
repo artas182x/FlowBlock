@@ -1,4 +1,4 @@
-module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken
+module github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken
 
 go 1.14
 

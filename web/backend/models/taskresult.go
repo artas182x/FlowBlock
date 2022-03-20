@@ -1,6 +1,6 @@
 package models
 
-import "github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
+import "github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken/tokenapi"
 
 type TaskResult struct {
 	Finished bool

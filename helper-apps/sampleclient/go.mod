@@ -3,7 +3,7 @@ module client
 go 1.17
 
 require (
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220313203734-d5d5cefb9fae
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken v0.0.0-20220313203734-d5d5cefb9fae
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 )
 
