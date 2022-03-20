@@ -1,10 +1,10 @@
-module github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-examplealgorithm
+module github.com/artas182x/FlowBlock/chaincode-sources/chaincode-examplealgorithm
 
 go 1.14
 
 require (
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220314004216-9b6cc88ab755
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata v0.0.0-20220221203445-4e8272ade8a4
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken v0.0.0-20220320013032-a1f7cfe1271a
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata v0.0.0-20220320013930-544133e146fc
 	github.com/aws/aws-sdk-go v1.43.17 // indirect
 	github.com/galeone/tensorflow/tensorflow/go v0.0.0-20210519172502-4018d721b591
 	github.com/galeone/tfgo v0.0.0-20210914072119-caabdf830ee3

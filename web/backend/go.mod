@@ -1,10 +1,11 @@
-module github.com/artas182x/hyperledger-fabric-master-thesis/backend
+module github.com/artas182x/FlowBlock/backend
 
 go 1.17
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.7.0
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken v0.0.0-20220313203734-d5d5cefb9fae
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken v0.0.0-20220320014107-3bac8e40551f
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata v0.0.0-20220320014107-3bac8e40551f
 	github.com/aws/aws-sdk-go v1.43.17
 	github.com/gin-gonic/gin v1.7.4
 	github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344
@@ -108,7 +109,6 @@ require (
 )
 
 require (
-	github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata v0.0.0-20220211090411-deb3100507c2
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

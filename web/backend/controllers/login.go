@@ -4,8 +4,8 @@ import (
 	"log"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
+	"github.com/artas182x/FlowBlock/backend/models"
+	"github.com/artas182x/FlowBlock/backend/services"
 	"github.com/gin-gonic/gin"
 )
 
