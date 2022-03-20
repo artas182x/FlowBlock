@@ -8,7 +8,7 @@ import (
 	"github.com/artas182x/FlowBlock/backend/models"
 	"github.com/artas182x/FlowBlock/backend/services"
 	"github.com/artas182x/FlowBlock/backend/vars"
-	"github.com/artas182x/FlowBlock/chaincode-medicaldata/medicaldatastructs"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
 	"github.com/gin-gonic/gin"
 )
 

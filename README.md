@@ -1,4 +1,4 @@
-# Hyperledger Fabric Computation Platform
+# FlowBlock - Hyperledger Fabric Computation Platform
 
 Distributed computation platform that allows to perform computations on data without possibility to see it. All computations are performed on Blockchain in auditable way. It can be used by for example hospitals and universities to perform computations on patient's data in the way that universities see only the result - they don't see actual data. Patient have ability to give and revoke permissions (read, write or compute) to specific people or to organisations.
 
