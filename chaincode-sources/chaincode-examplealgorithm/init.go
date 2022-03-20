@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-examplealgorithm/examplealgorithm"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-examplealgorithm/examplealgorithm"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 

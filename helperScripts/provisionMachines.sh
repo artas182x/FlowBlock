@@ -13,17 +13,17 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io golang-1.17  git;
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-echo 'export PATH="$PATH:/usr/lib/go-1.17/bin"' | sudo tee -a ~/.profile
+echo 'export PATH="$PATH:/usr/lib/go-1.17/bin"' | sudo tee -a ~/.bashrc
 
 curl -sSL https://bit.ly/2ysbOFE | sudo bash -s -- 2.3.3 1.5.2 -s -b
 
 docker rmi hyperledger/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:2.3 hyperledger/fabric-ccenv:latest
 
-docker pull registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/fabric-ccenv:2.3.3
-docker tag registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:2.3.3
-docker tag registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:2.3
-docker tag registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:latest
+docker pull registry.gitlab.com/artas182x/flowblock/fabric-ccenv:2.3.3
+docker tag registry.gitlab.com/artas182x/flowblock/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:2.3.3
+docker tag registry.gitlab.com/artas182x/flowblock/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:2.3
+docker tag registry.gitlab.com/artas182x/flowblock/fabric-ccenv:2.3.3 hyperledger/fabric-ccenv:latest
 
-docker pull registry.gitlab.com/artas182x/dockerimages_blockchaindataprocessor/hyperledger-baseos:2.3.3
+docker pull registry.gitlab.com/artas182x/flowblock/hyperledger-baseos:2.3.3
 
 docker pull redis:alpine
