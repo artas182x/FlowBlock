@@ -7,9 +7,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/vars"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
+	"github.com/artas182x/FlowBlock/backend/models"
+	"github.com/artas182x/FlowBlock/backend/vars"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken/tokenapi"
 	"github.com/gocelery/gocelery"
 	"github.com/gomodule/redigo/redis"
 )

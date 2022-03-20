@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/medicaldatachaincode"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/patientchaincode"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata/medicaldatachaincode"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata/patientchaincode"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
