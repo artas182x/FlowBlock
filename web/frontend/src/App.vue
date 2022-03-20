@@ -19,7 +19,7 @@
         <a
           class="navbar-brand mt-2 mt-lg-0"
           href="#"
-        >FlowChain</a>
+        >FlowBlock</a>
         <ul class="navbar-nav me-auto mt-2 mt-lg-0">
           <li
             v-if="showComputationBoard"
