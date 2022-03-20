@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken v0.0.0-20220320013032-a1f7cfe1271a // indirect
+	github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata v0.0.0-20220320013930-544133e146fc // indirect
 	github.com/aws/aws-sdk-go v1.43.17 // indirect
 	github.com/galeone/tensorflow/tensorflow/go v0.0.0-20210519172502-4018d721b591
 	github.com/galeone/tfgo v0.0.0-20210914072119-caabdf830ee3
