@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
+	"github.com/artas182x/FlowBlock/backend/models"
 	fabricCaUtil "github.com/hyperledger/fabric-ca/lib"
 	"github.com/hyperledger/fabric-ca/lib/attrmgr"
 )

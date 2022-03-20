@@ -5,10 +5,10 @@ import (
 
 	"encoding/base64"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/services"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/vars"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-medicaldata/medicaldatastructs"
+	"github.com/artas182x/FlowBlock/backend/models"
+	"github.com/artas182x/FlowBlock/backend/services"
+	"github.com/artas182x/FlowBlock/backend/vars"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
 	"github.com/gin-gonic/gin"
 )
 
