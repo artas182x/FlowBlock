@@ -5,13 +5,22 @@ services:
     image: registry.gitlab.com/artas182x/flowblock/populatewallet:0.4
     build: .
     volumes:
-      - "${PWD}/wallet:/app/wallet2"
-      - "../../network/organizations/peerOrganizations/:/app/peerOrganizations"
+        - type: volume
+          source: hyperledger
+          target: /hyperledger
     networks:
       - hyperledger
-    command: "bash -c 'rm -f /app/wallet2/* && cd /app && /app/generateWallet && cp /app/wallet/* /app/wallet2/ && chmod 644 /app/wallet2/*'"
+    command: "bash -c 'rm -f ./wallet/* && cd /hyperledger/network/organizations && /app/generateWallet && chmod 644 ./wallet/*'"
       
 networks:
   hyperledger:
     name: fabric_test
     external: true
+ 
+volumes:   
+  hyperledger:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: addr=${NFS_IP},rw,relatime,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2
+      device: ":${NFS_DEVICE}"

@@ -323,7 +323,10 @@ function networkDown() {
     docker run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/ordererOrg/msp organizations/fabric-ca/ordererOrg/tls-cert.pem organizations/fabric-ca/ordererOrg/ca-cert.pem organizations/fabric-ca/ordererOrg/IssuerPublicKey organizations/fabric-ca/ordererOrg/IssuerRevocationPublicKey organizations/fabric-ca/ordererOrg/fabric-ca-server.db'
     # remove channel and script artifacts
     docker run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf channel-artifacts log.txt *.tar.gz'
-    docker volume rm $(docker volume ls -q) || exit 0
+    docker volume rm $(docker volume ls -q --filter "name=test*")
+    docker volume rm $(docker volume ls -q --filter "name=web*")
+    docker volume rm $(docker volume ls -q --filter "name=generatewallet*")
+    echo "[INFO] Don't worry about Docker volume errors if there are any. Remember to clean other nodes as well"
   fi
 }
 

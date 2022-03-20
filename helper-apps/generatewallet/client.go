@@ -35,7 +35,7 @@ func populateWallet(wallet *gateway.Wallet, userOrg string) error {
 	org := strings.Split(userOrg, "@")[1]
 	orgNum := getStringInBetween(org, "org", ".example.com")
 	credPath := filepath.Join(
-		"/app",
+		".",
 		"peerOrganizations",
 		org,
 		"users",
