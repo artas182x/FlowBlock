@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/backend/models"
+	"github.com/artas182x/FlowBlock/backend/models"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )

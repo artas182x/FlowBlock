@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-computationtoken/tokenapi"
-	"github.com/artas182x/hyperledger-fabric-master-thesis/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-computationtoken/tokenapi"
+	"github.com/artas182x/FlowBlock/chaincode-sources/chaincode-medicaldata/medicaldatastructs"
 	tf "github.com/galeone/tensorflow/tensorflow/go"
 	tg "github.com/galeone/tfgo"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
