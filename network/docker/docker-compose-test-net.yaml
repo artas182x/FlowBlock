@@ -134,7 +134,6 @@ services:
         - type: volume
           source: hyperledger
           target: /hyperledger
-        - ../../config:/etc/hyperledger/fabric
         - peer0.org1.example.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
