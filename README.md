@@ -46,9 +46,9 @@ Then you can go to next section to install all needed packages
 
 # Prerequisites (useful scripts)
 
-provisionMachines.sh - run to install prerequsites on machine
+helperScripts/provisionMachines.sh - run to install prerequsites on machine
 
-vagrantFixDns.sh - used by Vagrant where to set DNS to DHCP
+helperScripts/vagrantFixDns.sh - used by Vagrant where to set DNS to DHCP
 
 # Example Docker swarm cluster creation commands:
 
@@ -87,7 +87,7 @@ In this repository there is a Vagrant demo included. You can use it to setup loc
     export NFS_DEVICE=/srv/myexportdir
 
 2. Go to network directory
-3. Run ./restart.sh command (run from manager node)
+3. Run ./start.sh command (run from manager node)
 4. Go to web directory
 5. Type: docker stack deploy -c docker-compose.yml web
 
@@ -95,11 +95,11 @@ In this repository there is a Vagrant demo included. You can use it to setup loc
 
 In helper-apps you will find two application that may be useful:
 
-1. generatewallet - it will generate example wallets for Org1-Org4 users to use later in web application. The easiest way to launch it is using docker-compose
+1. generatewallet - it will generate example wallets for Org1-Org4 users to use later in web application. The easiest way to launch it is using docker-compose. Wallet will be in network/organizations/wallet
 2. sampleclient - simple Blockchain client. You can use it to debug your smart contracts.
 
 # Stop network and cleanup
 
 1. docker stack rm web (run from manager node)
-1. docker stack rm test (run from manager node)
-2. On each node execute: docker volume rm $(docker volume ls -q)
+2. Go to network directory and run ./network.sh down
+3. On each node execute: docker volume rm $(docker volume ls -q)
