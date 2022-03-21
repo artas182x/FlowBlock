@@ -102,4 +102,10 @@ In helper-apps you will find two application that may be useful:
 
 1. docker stack rm web (run from manager node)
 2. Go to network directory and run ./network.sh down
-3. On each node execute: docker volume rm $(docker volume ls -q)
+3. On each node execute:
+
+    docker volume rm $(docker volume ls -q --filter "name=test*")
+
+    docker volume rm $(docker volume ls -q --filter "name=web*")
+    
+    docker volume rm $(docker volume ls -q --filter "name=generatewallet*")
