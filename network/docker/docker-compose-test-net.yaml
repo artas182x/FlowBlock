@@ -595,6 +595,9 @@ services:
         - type: volume
           source: hyperledger
           target: /hyperledger
+        - type: volume
+          source: config
+          target: /etc/hyperledger/fabric
         - peer2.org1.example.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -650,6 +653,9 @@ services:
         - type: volume
           source: hyperledger
           target: /hyperledger
+        - type: volume
+          source: config
+          target: /etc/hyperledger/fabric
         - peer2.org2.example.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -703,6 +709,9 @@ services:
         - type: volume
           source: hyperledger
           target: /hyperledger
+        - type: volume
+          source: config
+          target: /etc/hyperledger/fabric
         - peer2.org3.example.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -755,6 +764,9 @@ services:
         - type: volume
           source: hyperledger
           target: /hyperledger
+        - type: volume
+          source: config
+          target: /etc/hyperledger/fabric
         - peer2.org4.example.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
