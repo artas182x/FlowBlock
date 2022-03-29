@@ -118,13 +118,13 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 
 	for i := 1; i <= NO_PNEUMONIA_IMG_NUM; i++ {
 
-		patientId := i%patientchaincode.PATIENTS_NUM + 1
+		patientId := 1
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
 		global_id_counter += 1
 
 		fileName := fmt.Sprintf("normal%d.jpeg", i)
 
-		sec := min + 60*60*24*((int64(i)-1)/25)
+		sec := min + 60*60*24*int64((int64(i)-1)/25)
 
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
@@ -140,13 +140,13 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 
 	for i := 1; i <= PNEUMONIA_IMG_NUM; i++ {
 
-		patientId := i%patientchaincode.PATIENTS_NUM + 1
+		patientId := 1
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
 		global_id_counter += 1
 
 		fileName := fmt.Sprintf("pneumonia%d.jpeg", i)
 
-		sec := min + 60*60*24*((int64(i)-1)/25)
+		sec := min + 60*60*24*int64((int64(i)-1)/25)
 
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
