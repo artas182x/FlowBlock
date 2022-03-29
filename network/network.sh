@@ -181,8 +181,9 @@ function createOrgs() {
   if [ "$CRYPTO" == "Certificate Authorities" ]; then
     infoln "Generating certificates using Fabric CA"
     docker stack deploy --compose-file $COMPOSE_FILE_CA test 2>&1
-
+    sleep 30
     . organizations/fabric-ca/registerEnroll.sh
+    sleep 15
 
   while :
     do
@@ -256,6 +257,8 @@ function networkUp() {
   fi
 
   DOCKER_SOCK="${DOCKER_SOCK}" docker stack deploy ${COMPOSE_FILES} test 2>&1
+
+  sleep 30
 
   docker ps -a
   if [ $? -ne 0 ]; then

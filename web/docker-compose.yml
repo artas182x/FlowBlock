@@ -57,11 +57,11 @@ services:
       - minio1
       - minio2
     entrypoint: >
-     /bin/sh -c "sleep 5 &&
+     /bin/sh -c "sleep 70 &&
      /usr/bin/mc config host add myminio http://minio1:9000 admin adminadmin;
      /usr/bin/mc mb myminio/input-files;
      /usr/bin/mc cp /web/sample_files/* myminio/input-files;
-     sleep 1000000000
+     sleep infinity;
      "
 
   redis1:
