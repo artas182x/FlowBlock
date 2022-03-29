@@ -273,11 +273,11 @@ func (s *ExampleAlgorithmSmartContract) XRayPneumoniaCases(ctx contractapi.Trans
 
 	cases := 0
 
-	for _, arg := range medicalEntries {
+	for i, arg := range medicalEntries {
 		medicalEntryVals := strings.Split(arg.MedicalEntryValue, "?")
 		fileName := medicalEntryVals[0]
 		checksum := medicalEntryVals[1]
-		log.Printf("Classifying: %+q\n", fileName)
+		log.Printf("Classifying: %d %+q\n", i, fileName)
 		result, err := classifyPneumonia(ctx, fileName, checksum, baseDir)
 		if err != nil {
 			ret := tokenapi.Ret{RetValue: fmt.Sprintln("Error: error during classification"), RetType: "string"}

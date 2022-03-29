@@ -12,8 +12,8 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const PNEUMONIA_IMG_NUM = 30
-const NO_PNEUMONIA_IMG_NUM = 20
+const PNEUMONIA_IMG_NUM = 300
+const NO_PNEUMONIA_IMG_NUM = 200
 
 const HEART_RATE_GEN = 20
 const BLOOD_PREASSURE_GEN = 30
@@ -45,9 +45,9 @@ func (s *MedicalDataSmartContract) InitLedger(ctx contractapi.TransactionContext
 }
 
 func randDate(currId int) time.Time {
-	min := time.Date(2020, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
+	min := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
 
-	sec := min + int64(currId)*int64(currId)*400
+	sec := min + int64(60*60*24*((currId-1)/25))
 	return time.Unix(sec, 0)
 }
 
@@ -114,7 +114,9 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 
 	entries := []medicaldatastructs.MedicalEntry{}
 
-	for i := 1; i < NO_PNEUMONIA_IMG_NUM; i++ {
+	min := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
+
+	for i := 1; i <= NO_PNEUMONIA_IMG_NUM; i++ {
 
 		patientId := i%patientchaincode.PATIENTS_NUM + 1
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
@@ -122,19 +124,21 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 
 		fileName := fmt.Sprintf("normal%d.jpeg", i)
 
+		sec := min + 60*60*24*((int64(i)-1)/25)
+
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
 			PatientID:         fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId),
 			MedicalEntryName:  "ChestXRay",
 			MedicalEntryValue: fmt.Sprintf("%s?%s", fileName, GetSHA256Hash(fileName)),
 			MedicalEntryType:  "s3img",
-			DateAdded:         randDate(i),
+			DateAdded:         time.Unix(sec, 0),
 		}
 
 		entries = append(entries, entry)
 	}
 
-	for i := 1; i < PNEUMONIA_IMG_NUM; i++ {
+	for i := 1; i <= PNEUMONIA_IMG_NUM; i++ {
 
 		patientId := i%patientchaincode.PATIENTS_NUM + 1
 		id, _ := ctx.GetStub().CreateCompositeKey(INDEX_NAME, []string{KEY_NAME, fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId), "ChestXRay", fmt.Sprintf("%s%d", ctx.GetStub().GetTxID(), global_id_counter)})
@@ -142,13 +146,15 @@ func genRandomXray(ctx contractapi.TransactionContextInterface) []medicaldatastr
 
 		fileName := fmt.Sprintf("pneumonia%d.jpeg", i)
 
+		sec := min + 60*60*24*((int64(i)-1)/25)
+
 		entry := medicaldatastructs.MedicalEntry{
 			ID:                id,
 			PatientID:         fmt.Sprintf("CN=patient%d,OU=client,O=Hyperledger,ST=North Carolina,C=US", patientId),
 			MedicalEntryName:  "ChestXRay",
 			MedicalEntryValue: fmt.Sprintf("%s?%s", fileName, GetSHA256Hash(fileName)),
 			MedicalEntryType:  "s3img",
-			DateAdded:         randDate(i),
+			DateAdded:         time.Unix(sec, 0),
 		}
 
 		entries = append(entries, entry)
