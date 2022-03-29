@@ -46,3 +46,4 @@ web/sample_files/*.jpeg
 
 .vagrant
 __pycache__
+*.csv
