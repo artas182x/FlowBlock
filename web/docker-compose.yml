@@ -57,7 +57,7 @@ services:
       - minio1
       - minio2
     entrypoint: >
-     /bin/sh -c "sleep 70 &&
+     /bin/sh -c "sleep 120 &&
      /usr/bin/mc config host add myminio http://minio1:9000 admin adminadmin;
      /usr/bin/mc mb myminio/input-files;
      /usr/bin/mc cp /web/sample_files/* myminio/input-files;
