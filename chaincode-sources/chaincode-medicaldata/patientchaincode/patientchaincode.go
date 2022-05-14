@@ -193,7 +193,7 @@ func (s *PatientSmartContract) CanRead(ctx contractapi.TransactionContextInterfa
 	return true, nil
 }
 
-// CanRead returns whether user or org has permission to read values
+// CanRead returns whether user or org has permission to write values
 func (s *PatientSmartContract) CanWrite(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
 
 	err := cid.AssertAttributeValue(ctx.GetStub(), "ReadOthersData", "1")
