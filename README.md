@@ -18,7 +18,24 @@ Used stack:
 
 Author: Artur Załęski
 
-# Prerequisites (manual steps)
+# Architecture
+
+## Users
+
+![users](https://user-images.githubusercontent.com/3458010/170553707-6529a766-0b73-497b-926a-ee5ce46d005f.png)
+
+# The process of performing the calculations
+
+![compute_process](https://user-images.githubusercontent.com/3458010/170553728-0e4133f7-d8cd-46ac-b47e-754ce03b66b2.png)
+
+## Storing large files
+
+For storing large files I propose using any storage compatible with S3. On blockchain the only file hash is stored so file authenticity can be easily verified.
+
+![large_files](https://user-images.githubusercontent.com/3458010/170553762-95efb8f3-dd7d-413c-87d6-437b880c5751.png)
+
+
+## Prerequisites (manual steps)
 
 You need to have NFS server (preferred V4), because Docker swarm nodes use it to exchange data about certificates and genesis block. NSF share must be pointing to the root of this repository. The machine that will be used to deploy nodes needs to have this share mounted, and all scripts should be run from there.
 
