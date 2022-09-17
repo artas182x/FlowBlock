@@ -2,7 +2,7 @@
 
 The goal of this project was to create a tool prototype which allows performing computations on classified data while maintaining auditability. The system in principle is based on blockchain network to register all operations that were made on users' data. The solution is intended to use wherever access to data e.g. for scientific purposes is limited, because of personal data protection acts.
 
-![mgr_arch_eng drawio](https://user-images.githubusercontent.com/3458010/181119340-bccfdf5b-093f-40b4-a9c8-c420b6df7ab0.png)
+![image](https://user-images.githubusercontent.com/3458010/190876288-ca242332-266a-4cb2-9f0b-67c53a3e0496.png)
 
 Distributed computation platform that was created allows to perform computations on data without possibility to see it. For example, a university can perform some statistics measurements on classified data, but they can't directly read data like Social Security number. All computations are performed on Blockchain in an auditable way. It can be used by for example hospitals and universities to perform computations on patient's data in the way that universities see only the result - they don't see actual data. Patient have ability to give and revoke permissions (read, write or compute) to specific people or to organizations. The platform supports Tensorflow AI library, but it can be easily extending to support more frameworks.
 
